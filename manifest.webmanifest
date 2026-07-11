@@ -1,0 +1,10 @@
+{
+  "name":"PCSAPO 飲食店導入 営業支援",
+  "short_name":"PCSAPO営業",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f5f1e9",
+  "theme_color":"#0d3152",
+  "lang":"ja",
+  "icons":[{"src":"assets/icons/icon-192.png","sizes":"192x192","type":"image/png"},{"src":"assets/icons/icon-512.png","sizes":"512x512","type":"image/png"}]
+}
