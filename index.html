@@ -15,7 +15,7 @@
       <div class="brand"><span class="brand-mark">P</span><div><b>PCSAPO</b><small>マキシ企画</small></div></div>
       <button class="new-case" id="newCase">＋ 新規案件</button>
       <nav id="mainNav" aria-label="メインメニュー"></nav>
-      <div class="side-footer"><span id="saveState">未保存</span><small>端末内に安全に保存</small></div>
+      <div class="side-footer"><span id="saveState">未保存</span><small>端末内の最新10件を保存</small></div>
     </aside>
 
     <div class="main-wrap">
@@ -34,8 +34,15 @@
   </div>
 
   <dialog id="caseDialog">
-    <div class="dialog-head"><div><small>LOCAL STORAGE</small><h2>案件一覧</h2></div><button class="icon-button" data-close>×</button></div>
-    <div class="dialog-tools"><button class="button ghost" id="exportCsv">CSV出力</button><label class="button ghost">CSV取込<input hidden type="file" id="importCsv" accept=".csv,text/csv"></label></div>
+    <div class="dialog-head"><div><small>CASE STORAGE</small><h2>案件一覧</h2></div><button class="icon-button" data-close>×</button></div>
+    <section class="storage-panel">
+      <div><b>現在の保存先</b><span>この端末（最新10件）</span></div>
+      <label class="storage-choice active"><input type="radio" name="storageMode" checked><span><b>端末内保存</b><small>すぐ使える・最新10件</small></span></label>
+      <label class="storage-choice"><input type="radio" name="storageMode" disabled><span><b>Google Cloud</b><small>複数端末共有・今後対応予定</small></span></label>
+    </section>
+    <p class="storage-note">最新10件を超える場合は、整理前に全案件のJSONバックアップを自動保存します。</p>
+    <div class="dialog-tools"><button class="button primary" id="exportBackup">JSONバックアップ</button><label class="button ghost">JSON復元<input hidden type="file" id="importBackup" accept=".json,application/json"></label><button class="button ghost" id="exportCsv">CSV出力</button><label class="button ghost">CSV取込<input hidden type="file" id="importCsv" accept=".csv,text/csv"></label></div>
+    <div class="case-count" id="caseCount"></div>
     <div id="caseList" class="case-list"></div>
   </dialog>
 
