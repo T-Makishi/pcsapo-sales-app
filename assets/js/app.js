@@ -43,7 +43,24 @@ const textArea = (key,label) => `<div class="field wide"><label for="f-${key}">$
 const choice = (key,label) => `<label class="choice"><input type="checkbox" data-check="${esc(key)}" ${state.data.checks[key]?'checked':''}><span>${label}</span></label>`;
 const choices = items => `<div class="check-grid">${items.map(([k,l])=>choice(k,l)).join('')}</div>`;
 
-function createContractNo(){const d=new Date();return `MK-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}-${String(Date.now()).slice(-5)}`}
+/*
+ * 契約番号は「日付-時刻＋ミリ秒-ランダム8桁」で生成する。
+ * 保存済み案件とも照合するため、同一端末内では重複させない。
+ * 例: MK-20260711-191720123-A1B2C3D4
+ * ※クラウド未接続の間は、別端末の番号との中央照合はできない。
+ */
+function createContractNo(){
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const date=`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+  const time=`${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${String(d.getMilliseconds()).padStart(3,'0')}`;
+  const existing=new Set(allCases().map(x=>x.contractNo).filter(Boolean));
+  let no;
+  do{
+    const random=(crypto.randomUUID?.().replace(/-/g,'').slice(0,8)||`${Math.random().toString(16).slice(2)}00000000`.slice(0,8)).toUpperCase();
+    no=`MK-${date}-${time}-${random}`;
+  }while(existing.has(no));
+  return no;
+}
 function loadCurrent(){try{return JSON.parse(localStorage.getItem(UI_KEY))}catch{return null}}
 function allCases(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch{return []}}
 function commitCases(list){localStorage.setItem(STORAGE_KEY,JSON.stringify(list))}

@@ -59,3 +59,80 @@ body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text"
 
 .mini-plan-line{display:flex;flex-wrap:wrap;gap:6px;margin-top:15px}.mini-plan-line span{padding:5px 8px;border-radius:99px;background:#eaf7f1;color:#177653;font-size:10px;font-weight:800}.hearing-maintenance{margin-top:18px;background:linear-gradient(135deg,#f0faf6,#fff)}.hearing-maintenance h2{margin-top:8px}.maintenance-hearing-choice .choice{min-height:75px;align-items:center}.maintenance-hearing-choice .choice span b,.maintenance-hearing-choice .choice span small,.hearing-plan-select .choice span b,.hearing-plan-select .choice span small{display:block}.maintenance-hearing-choice .choice span small,.hearing-plan-select .choice span small{color:var(--muted);font-size:10px}.hearing-plan-select{display:grid;grid-template-columns:auto repeat(3,1fr);align-items:center;gap:8px;margin-top:14px}.hearing-plan-select>span{font-size:11px;font-weight:850}.selected-maintenance-note{margin:14px 0 0;padding:11px;border-radius:11px;background:#fff}.maintenance-contract-item{background:#eff9f5!important}.maintenance-contract-item .service-check{background:#177653}
 @media(max-width:700px){.hearing-plan-select{grid-template-columns:1fr}.hearing-plan-select>span{margin-top:5px}}
+
+/*
+ * iPhone/iPadを含むブラウザ印刷の最終調整。
+ * @pageの余白と帳票サイズを重ねず、各帳票を物理A4用紙1枚として扱う。
+ * 印刷時は画面幅に関係なく署名欄を必ず左右2列に固定する。
+ */
+@media print{
+  @page{size:A4 portrait;margin:0}
+  html,body{width:210mm!important;margin:0!important;padding:0!important;background:#fff!important}
+  #content{width:210mm!important;margin:0!important;padding:0!important}
+  .print-sheet{
+    width:210mm!important;
+    height:297mm!important;
+    min-height:297mm!important;
+    max-height:297mm!important;
+    margin:0!important;
+    padding:19mm!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    overflow:hidden!important;
+    break-before:auto!important;
+    page-break-before:auto!important;
+    break-after:page!important;
+    page-break-after:always!important;
+  }
+  .print-sheet:last-child{break-after:auto!important;page-break-after:auto!important}
+  .clean-cover{padding:23mm!important}
+  .cover-client{left:23mm!important;right:23mm!important;bottom:23mm!important}
+  .contract-print-sheet,.maintenance-print-sheet{padding-bottom:58mm!important}
+  .contract-signatures,.maintenance-signatures{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5mm!important;
+    left:19mm!important;
+    right:19mm!important;
+    bottom:19mm!important;
+  }
+  .print-signature{min-width:0!important;padding:3mm!important}
+  .print-signature>img,.print-signature>div{display:block!important;width:100%!important;height:22mm!important;object-fit:contain!important}
+  .print-signature small{white-space:nowrap!important}
+}
+
+/*
+ * iOS/Safariは用紙と同じ297mmの要素を丸め誤差で次ページへ送ることがある。
+ * 1mmの安全域を取り、署名欄は絶対配置ではなく文書内の末尾に固定する。
+ */
+@media print{
+  html,body,#content{height:auto!important;min-height:0!important}
+  .print-sheet{
+    height:296mm!important;
+    min-height:296mm!important;
+    max-height:296mm!important;
+    contain:layout paint!important;
+  }
+  .clean-cover{
+    height:296mm!important;
+    min-height:296mm!important;
+    max-height:296mm!important;
+  }
+  .contract-print-sheet,.maintenance-print-sheet{
+    display:flex!important;
+    flex-direction:column!important;
+    padding-bottom:19mm!important;
+  }
+  .contract-signatures,.maintenance-signatures{
+    position:static!important;
+    width:100%!important;
+    margin-top:auto!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    flex:none!important;
+  }
+  .print-signature{overflow:hidden!important}
+  .print-signature>b,.print-signature>small{line-height:1.25!important}
+}
