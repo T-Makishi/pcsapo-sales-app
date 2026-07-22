@@ -7,7 +7,7 @@
   <meta name="description" content="PCSAPO マキシ企画 飲食店導入パッケージ営業支援システム">
   <title>飲食店導入パッケージ | PCSAPO マキシ企画</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=17">
 </head>
 <body>
   <div class="app-shell">
@@ -17,12 +17,14 @@
       <nav id="mainNav" aria-label="メインメニュー"></nav>
       <div class="side-footer"><span id="saveState">未保存</span><small>端末内の最新10件を保存</small></div>
     </aside>
+    <button class="sidebar-backdrop" id="sidebarBackdrop" aria-label="メニューを閉じる" hidden></button>
 
     <div class="main-wrap">
       <header class="topbar">
-        <button class="icon-button menu-button" id="menuButton" aria-label="メニューを開く">☰</button>
+        <button class="icon-button menu-button" id="menuButton" aria-label="メニューを開く" aria-expanded="false">☰</button>
         <div class="case-title"><span class="status-dot"></span><input id="caseName" aria-label="案件名" value="新規導入案件"></div>
         <div class="top-actions">
+          <button class="button ghost" id="modeButton">入口へ</button>
           <button class="button ghost" id="caseListButton">案件一覧</button>
           <button class="button ghost" id="shareButton">共有</button>
           <button class="button primary" id="saveButton">保存</button>
@@ -52,7 +54,16 @@
     <div class="share-grid"><button class="button primary" id="nativeShare">端末の共有メニュー</button><button class="button line" id="lineShare">LINEで共有</button><button class="button ghost" id="mailShare">メールで共有</button></div>
   </dialog>
 
+  <dialog id="adminDialog">
+    <div class="dialog-head"><div><small>ADMIN ACCESS</small><h2 id="adminDialogTitle">管理者用を開く</h2></div><button class="icon-button" data-close>×</button></div>
+    <p class="muted" id="adminDialogHelp">この端末に設定した簡易パスコードを入力してください。</p>
+    <div class="field"><label for="adminPasscode">パスコード</label><input id="adminPasscode" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="12"></div>
+    <div class="field" id="adminPasscodeConfirmWrap" hidden><label for="adminPasscodeConfirm">パスコード確認</label><input id="adminPasscodeConfirm" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="12"></div>
+    <div class="dialog-tools"><button class="button primary" id="adminLoginButton">管理者用を開く</button></div>
+    <p class="storage-note">これは共有端末での誤操作を防ぐ簡易ロックです。サーバー認証ではありません。</p>
+  </dialog>
+
   <div class="toast" id="toast" role="status"></div>
-  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/app.js?v=17" defer></script>
 </body>
 </html>
