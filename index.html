@@ -7,7 +7,7 @@
   <meta name="description" content="PCSAPO マキシ企画 飲食店導入パッケージ営業支援システム">
   <title>飲食店導入パッケージ | PCSAPO マキシ企画</title>
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="assets/css/style.css?v=19">
+  <link rel="stylesheet" href="assets/css/style.css?v=20">
 </head>
 <body>
   <div class="app-shell">
@@ -59,11 +59,11 @@
     <p class="muted" id="adminDialogHelp">この端末に設定した簡易パスコードを入力してください。</p>
     <div class="field"><label for="adminPasscode">パスコード</label><input id="adminPasscode" type="password" inputmode="numeric" autocomplete="current-password" minlength="4" maxlength="12"></div>
     <div class="field" id="adminPasscodeConfirmWrap" hidden><label for="adminPasscodeConfirm">パスコード確認</label><input id="adminPasscodeConfirm" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="12"></div>
-    <div class="dialog-tools"><button class="button primary" id="adminLoginButton">管理者用を開く</button></div>
+    <div class="dialog-tools"><button class="button primary" id="adminLoginButton">管理者用を開く</button><button class="button ghost" id="resetAdminPasscode">この端末のパスコードをリセット</button></div>
     <p class="storage-note">これは共有端末での誤操作を防ぐ簡易ロックです。サーバー認証ではありません。</p>
   </dialog>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="assets/js/app.js?v=19" defer></script>
+  <script src="assets/js/app.js?v=20" defer></script>
 </body>
 </html>
