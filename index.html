@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png?v=36">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=36">
-  <link rel="stylesheet" href="assets/css/style.css?v=45">
+  <link rel="stylesheet" href="assets/css/style.css?v=47">
 </head>
 <body>
   <div class="app-shell">
@@ -24,7 +24,20 @@
     <div class="main-wrap">
       <header class="topbar">
         <button class="icon-button menu-button" id="menuButton" aria-label="メニューを開く" aria-expanded="false">☰</button>
-        <div class="case-title"><span class="status-dot"></span><input id="caseName" aria-label="案件名" value="新規導入案件"></div>
+        <div class="case-workspace" id="caseWorkspace">
+          <div class="case-title">
+            <span class="status-dot"></span>
+            <input id="caseName" aria-label="案件名" value="新規導入案件">
+            <button class="case-auto-button" id="autoCaseName" type="button" title="選択サービスから案件名を作成">自動</button>
+          </div>
+          <div class="case-context-meta" aria-label="現在の案件情報">
+            <span id="currentStore">店舗名未入力</span>
+            <span id="currentContract">契約番号未発行</span>
+            <strong id="currentPage">現在のページ</strong>
+            <span id="currentTotal">見積 ¥0</span>
+            <span id="topSaveState">未保存</span>
+          </div>
+        </div>
         <div class="top-actions">
           <button class="button ghost" id="modeButton">HOME</button>
           <button class="button ghost" id="caseListButton">案件一覧</button>
@@ -46,6 +59,10 @@
     </section>
     <p class="storage-note">最新10件を超える場合は、整理前に全案件のJSONバックアップを自動保存します。</p>
     <div class="dialog-tools"><button class="button primary" id="exportBackup">JSONバックアップ</button><label class="button ghost">JSON復元<input hidden type="file" id="importBackup" accept=".json,application/json"></label><button class="button ghost" id="exportCsv">CSV出力</button><label class="button ghost">CSV取込<input hidden type="file" id="importCsv" accept=".csv,text/csv"></label></div>
+    <div class="case-search">
+      <label for="caseSearch">案件を検索</label>
+      <input id="caseSearch" type="search" placeholder="案件名・店舗名・担当者・契約番号">
+    </div>
     <div class="case-count" id="caseCount"></div>
     <div id="caseList" class="case-list"></div>
   </dialog>
@@ -66,6 +83,6 @@
   </dialog>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="assets/js/app.js?v=45" defer></script>
+  <script src="assets/js/app.js?v=47" defer></script>
 </body>
 </html>
