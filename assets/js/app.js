@@ -200,7 +200,7 @@ const ADMIN_MENUS = [
 ];
 
 const defaultData = () => ({
-  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), caseName:'新規導入案件', storeName:'', company:'', owner:'', contact:'', phone:'', email:'', address:'', hours:'', closed:'', notes:'', date:new Date().toISOString().slice(0,10), contractNo:createContractNo(), desiredDate:'', paymentMethod:'cash', workEmailPolicy:'existing', workEmail:'', printMode:'implementation', customerDocScope:'all', customerDocView:'package', includeStamp:false, maintenanceQuote:null, selectedServices:{website:true,square:true,funfo:false,design:false,other:false}, plan:'standard', contractDecision:'consider', maintenanceDecision:'none', subscription:false, subscriptionStart:'', subscriptionTerm:'12か月', subscriptionPrice:6980, subscriptionDetails:'月2回の更新、メニュー・価格変更、簡易バナー、Square/funfo相談', clientSignerName:'',producerSignerName:'',handoverSignerName:'',maintenanceClientSignerName:'',maintenanceProducerSignerName:'',checks:{}, quotes:[{name:'ホームページ制作',qty:1,price:39800,category:'ホームページ制作'},{name:'Square導入構築',qty:1,price:39800,category:'Square導入構築'}], signatures:{client:'',producer:'',handover:'',maintenanceClient:'',maintenanceProducer:''}, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
+  id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), caseName:'新規導入案件', storeName:'', company:'', owner:'', contact:'', phone:'', email:'', address:'', hours:'', closed:'', notes:'', date:new Date().toISOString().slice(0,10), contractNo:createContractNo(), desiredDate:'', paymentMethod:'cash', workEmailPolicy:'existing', workEmail:'', printMode:'implementation', customerDocScope:'all', customerDocView:'package', customerStep:1, includeStamp:false, maintenanceQuote:null, selectedServices:{website:true,square:true,funfo:false,design:false,other:false}, plan:'standard', contractDecision:'consider', maintenanceDecision:'none', subscription:false, subscriptionStart:'', subscriptionTerm:'12か月', subscriptionPrice:6980, subscriptionDetails:'月2回の更新、メニュー・価格変更、簡易バナー、Square/funfo相談', clientSignerName:'',producerSignerName:'',handoverSignerName:'',maintenanceClientSignerName:'',maintenanceProducerSignerName:'',checks:{}, quotes:[{name:'ホームページ制作',qty:1,price:39800,category:'ホームページ制作'},{name:'Square導入構築',qty:1,price:39800,category:'Square導入構築'}], signatures:{client:'',producer:'',handover:'',maintenanceClient:'',maintenanceProducer:''}, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()
 });
 let state = {page:'entry', mode:'entry', data:loadCurrent() || defaultData(), dirty:false};
 normalizeData(state.data);
@@ -414,11 +414,13 @@ function normalizeData(data){
   data.includeStamp = data.includeStamp === true;
   data.customerDocScope ||= 'all';
   data.customerDocView ||= 'package';
+  data.customerStep = Math.min(4,Math.max(1,Number(data.customerStep)||1));
   data.checks ||= {};
   if(data.workEmailPolicy==='google')data.workEmailPolicy='existing';
   data.selectedServices ||= {website:true,square:true,funfo:false,design:false,other:false};
   SERVICE_ORDER.forEach(id=>{if(typeof data.selectedServices[id] !== 'boolean')data.selectedServices[id]=false});
   data.quotes ||= [];
+  data.quotes=data.quotes.filter(q=>q.name!=='補助金・支援制度情報のご案内');
   if(!data.selectedServices.design)data.quotes=data.quotes.filter(q=>!(q.source==='hearingOption'&&q.name==='名刺制作'));
   data.quotes.forEach(q=>{
     if(q.masterId!==undefined&&q.masterId!==null&&q.masterId!=='')q.masterId=String(q.masterId);
@@ -485,7 +487,7 @@ function funfoReviewGuideHtml(){return `<div class="funfo-review-guide"><div cla
 function funfoPaymentGuideHtml(context='service'){return `<section class="funfo-payment-guide ${context==='schedule'?'schedule-version':''}"><div class="funfo-payment-head"><div><span>RECOMMENDED OPERATION</span><h2>基本はfunfo FreeのQR注文＋Square店頭会計</h2></div><small>公式情報確認：2026年7月23日</small></div><div class="funfo-payment-grid"><article><span>基本提案</span><h3>QRで注文し、会計はレジで行う</h3><strong>まずは無料プランを活用</strong><p>funfoで注文を受け、会計はSquareの対面決済または現金で行います。funfoとSquareを連携すると支払いデータが共有され、注文から店頭会計までを管理しやすくなります。Squareで利用する決済ブランドの申込み・審査は別途必要です。</p></article><article><span>ご希望時のみ</span><h3>お客様のスマートフォンで支払う</h3><strong>funfoのオンライン決済を別途申請</strong><p>テーブルで注文から支払いまで完了させたい場合に選びます。Square店頭会計とは異なる運用になるため、手数料・入金・売上管理への反映方法を確認してからご提案します。申込みと審査が必要です。</p></article></div>${funfoReviewGuideHtml()}<p class="funfo-payment-note"><b>ご案内：</b>QRセルフオーダーだけでfunfoのオンライン決済申請が必須になるわけではありません。PCSAPOでは、会計情報を分散させにくい店頭会計を基本とし、スマホ決済は店舗からご要望がある場合に個別提案します。</p><div class="schedule-source-links"><a href="https://www.funfo.jp/index.php/tablecode/" target="_blank" rel="noopener">funfo テーブルコード</a><a href="https://www.funfo.jp/index.php/qa/" target="_blank" rel="noopener">審査期間の公式説明</a><a href="https://www.funfo.jp/index.php/86/" target="_blank" rel="noopener">オンライン決済の申込方法</a><a href="https://www.funfo.jp/index.php/square/" target="_blank" rel="noopener">Square連携</a></div></section>`}
 function designServicePage(){return `${pageHead('SERVICE','制作・販促実行支援','Design & Promotion Support','制作物と、施設への設置に関する実作業を分けてご提案します。')}<section class="service-base-scope service-base-pair"><div><span class="eyebrow">DESIGN WORKS</span><h2>印刷物・制作物の基本作業</h2>${serviceBaseScopeHtml('design')}</div><div><span class="eyebrow">PROMOTION SUPPORT</span><h2>販促実行支援の基本作業</h2>${serviceBaseScopeHtml('other')}</div></section><div class="grid two">${catalogSection('制作物','work','メニュー・名刺・チラシ制作オプション')}${catalogSection('販促実行支援','promotion','販促実行支援オプション')}</div><section class="card notice"><h2>販促実行支援の条件</h2><p>最低受注額は10,000円です。交通費、駐車場、送料、印刷費、施設利用料は別途です。施設の許可なく設置は行いません。また、設置承諾、来店数、売上等の成果を保証するものではありません。広告枠販売や広告代理店業務は個別契約とします。</p></section>`}
 function customerProgressPage(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]);return `${pageHead('STATUS','導入状況','Implementation Status','担当者と一緒に、対象サービスと現在の確認状況をご覧いただけます。')}<section class="card"><h2>対象サービス</h2><div class="status-service-list">${selected.length?selected.map(id=>`<span>${esc(SERVICE_DEFS[id].label)}</span>`).join(''):'<p class="muted">対象サービスはまだ設定されていません。</p>'}</div></section><section class="card"><h2>全体の進行</h2><div class="flow-inline">${['ヒアリング','正式見積','契約','制作・設定','テスト','引渡し','保守・更新'].map((x,i)=>`<span><b>${i+1}</b>${x}</span>`).join('')}</div><p class="muted">正式な見積書・契約書・引渡し書類はPCSAPOが作成し、印刷またはPDFでお渡しします。</p></section>`}
-function manualsPage(){return `${pageHead('GUIDE','操作マニュアル','Operation Manuals','引渡し後に必要な基本操作と資料をご確認いただけます。')}<div class="grid three manual-grid">${card('STUDIO.Design 更新','<ol><li>STUDIO.Designへログイン</li><li>対象プロジェクトを開く</li><li>営業時間・文章・画像を変更</li><li>プレビュー後に公開</li></ol>','orange')}${card('Square 基本操作','<ol><li>POSレジへログイン</li><li>商品を選択して会計</li><li>支払方法を選択</li><li>レシートと売上を確認</li></ol>','blue')}${card('funfo 基本操作','<ol><li>店舗と営業状態を確認</li><li>メニューの表示・在庫を確認</li><li>注文状況を確認</li><li>営業終了後に集計を確認</li></ol>','green')}</div><section class="card material-card"><div class="material-head"><div><h2>Square・funfo 統合説明資料</h2><p class="muted">既存のPDF資料を閲覧・保存できます。</p></div><div class="section-actions"><a class="button primary" href="assets/docs/square-funfo-presentation.pdf" target="_blank" rel="noopener">開く</a><a class="button ghost" href="assets/docs/square-funfo-presentation.pdf" download>保存</a></div></div></section>`}
+function manualsPage(){return `${pageHead('GUIDE','操作マニュアル','Operation Manuals','お客様入力から導入後の基本操作まで、順番にご確認いただけます。')}<section class="card customer-operation-guide"><span class="eyebrow">CUSTOMER REQUEST GUIDE</span><h2>ヒアリング・概算見積の操作方法</h2><div class="operation-guide-grid"><article><b>1</b><h3>サービスを選ぶ</h3><p>店舗名と連絡先を入力し、必要なサービスを選択します。</p></article><article><b>2</b><h3>希望を入力する</h3><p>分かる範囲で条件とオプションを選びます。未定の項目は空欄で進めます。</p></article><article><b>3</b><h3>概算を確認する</h3><p>選択内容、概算金額、別途見積の項目を確認します。</p></article><article><b>4</b><h3>受付方法を選ぶ</h3><p>メール、LINE、PDF・紙から方法を選び、PCSAPOへ送ります。</p></article></div><div class="section-actions"><button class="button primary" data-go="hearing">入力を開始する</button><button class="button ghost" data-go="customerDocuments">PDFの確認画面へ</button></div><p class="reception-manual-note">メール・LINE・紙で送った後、PCSAPOから受付確認の返信が届いた時点で受付完了です。</p></section><div class="grid three manual-grid">${card('STUDIO.Design 更新','<ol><li>STUDIO.Designへログイン</li><li>対象プロジェクトを開く</li><li>営業時間・文章・画像を変更</li><li>プレビュー後に公開</li></ol>','orange')}${card('Square 基本操作','<ol><li>POSレジへログイン</li><li>商品を選択して会計</li><li>支払方法を選択</li><li>レシートと売上を確認</li></ol>','blue')}${card('funfo 基本操作','<ol><li>店舗と営業状態を確認</li><li>メニューの表示・在庫を確認</li><li>注文状況を確認</li><li>営業終了後に集計を確認</li></ol>','green')}</div><section class="card material-card"><div class="material-head"><div><h2>Square・funfo 統合説明資料</h2><p class="muted">既存のPDF資料を閲覧・保存できます。</p></div><div class="section-actions"><a class="button primary" href="assets/docs/square-funfo-presentation.pdf" target="_blank" rel="noopener">開く</a><a class="button ghost" href="assets/docs/square-funfo-presentation.pdf" download>保存</a></div></div></section>`}
 function resourceCard(item){
   const service=CONTENT_SERVICE_LABELS[item.service]||item.service;
   return `<article class="resource-card"><div><span>${esc(service)} / ${esc(item.category)}</span><h3>${esc(item.title)}</h3><p>${esc(item.description||'内容はリンク先でご確認ください。')}</p>${item.checkedAt?`<small>情報確認日：${esc(displayDate(item.checkedAt))}</small>`:''}</div>${item.url?`<a class="button ${item.kind==='officialLink'?'ghost':'primary'}" href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.buttonLabel)} ↗</a>`:'<span class="resource-unavailable">準備中</span>'}</article>`;
@@ -624,7 +626,7 @@ function syncServiceBase(serviceId,enabled){
 function applySelectedServicesToQuote(){SERVICE_ORDER.forEach(id=>{if(!state.data.selectedServices[id])return;const base=SERVICE_DEFS[id].base;if(!base)return;const exists=state.data.quotes.some(q=>q.category===base.category&&q.name===base.name);if(!exists)addQuoteItem(base.name,base.qty,base.price,{source:'service',category:base.category,unit:'式'})});state.data.updatedAt=new Date().toISOString();localStorage.setItem(UI_KEY,JSON.stringify(state.data));toast('選択サービスを見積へ反映しました');render()}
 function setMaintenanceQuote(only=false){const p=MAINTENANCE_PLANS[state.data.plan]||MAINTENANCE_PLANS.standard,months=maintenanceMonths();state.data.maintenanceQuote={name:`保守・定期点検契約（${p.label}）`,qty:months,price:Number(state.data.subscriptionPrice)||p.price,source:'maintenance',category:'保守・定期点検',unit:'か月',description:p.tasks.join('、')};state.data.printMode=only?'maintenance':'combined';state.data.maintenanceDecision='contract';state.data.subscription=true;markDirty();localStorage.setItem(UI_KEY,JSON.stringify(state.data));navigate('maintenanceQuote')}
 
-function serviceSelectorHtml(){return `<section class="card service-selector"><span class="eyebrow">SERVICE SCOPE</span><h2>今回の対象サービスを選択</h2><p class="muted">選択したサービスだけ、下のヒアリング・チェック・見積に表示されます。</p><div class="service-grid">${SERVICE_ORDER.map(id=>{const s=SERVICE_DEFS[id];return `<label class="service-tile accent-${s.accent}"><input type="checkbox" data-service="${id}" ${state.data.selectedServices[id]?'checked':''}><span><b>${esc(s.label)}</b><small>${esc(s.en)}</small><em>${esc(s.summary)}</em></span></label>`}).join('')}</div><div class="section-actions"><button class="button ghost" id="applyServiceQuotes">選択サービスを見積へ反映</button><button class="button primary" data-go="pricing">カテゴリ別見積を確認</button></div></section>`}
+function serviceSelectorHtml(){const actions=state.mode==='customer'?'<p class="service-selection-note">選択内容は自動的に概算見積へ反映されます。</p>':'<div class="section-actions"><button class="button ghost" id="applyServiceQuotes">選択サービスを見積へ反映</button><button class="button primary" data-go="pricing">カテゴリ別見積を確認</button></div>';return `<section class="card service-selector"><span class="eyebrow">SERVICE SCOPE</span><h2>今回の対象サービスを選択</h2><p class="muted">選択したサービスだけ、次のヒアリング・チェック・見積に表示されます。</p><div class="service-grid">${SERVICE_ORDER.map(id=>{const s=SERVICE_DEFS[id];return `<label class="service-tile accent-${s.accent}"><input type="checkbox" data-service="${id}" ${state.data.selectedServices[id]?'checked':''}><span><b>${esc(s.label)}</b><small>${esc(s.en)}</small><em>${esc(s.summary)}</em></span></label>`}).join('')}</div>${actions}</section>`}
 function serviceField(def,field){
   const [key,label,type='text',options=[]]=field;
   if(type==='textarea')return textArea(key,`${label} / ${def.en}`);
@@ -680,7 +682,46 @@ function combinedDocumentQuotes(targets){const categories=new Set(targets.map(id
 function customerCombinedEstimatePrintSheet(targets,index,total){const rows=combinedDocumentQuotes(targets),priced=rows.filter(q=>customerQuotePrice(q).visible),sub=priced.reduce((sum,q)=>sum+(Number(q.qty)||0)*(Number(q.price)||0),0),tax=Math.floor(sub*TAX),hasIndividual=rows.some(q=>!customerQuotePrice(q).visible),labels=targets.map(id=>SERVICE_DEFS[id].label);return `<section class="card print-sheet customer-estimate-print customer-combined-estimate"><div class="print-doc-head"><span>${String(index).padStart(2,'0')}</span><div><small>COMBINED PRELIMINARY ESTIMATE ${index}/${total}</small><h2>選択サービス 合計概算見積書</h2></div></div>${quoteIssuer(state.data,estimateCaseTitle(targets))}<div class="customer-estimate-scope"><b>対象サービス</b><span>${esc(labels.join('・'))}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>区分</th><th>項目</th><th>数量</th><th>小計</th></tr></thead><tbody>${rows.length?rows.map(q=>{const shown=customerQuotePrice(q);return `<tr><td>${esc(q.category||'その他')}</td><td>${esc(q.name)}</td><td>${q.qty} ${esc(q.unit||'式')}</td><td>${shown.label}</td></tr>`}).join(''):'<tr><td colspan="4">選択された見積項目はありません。</td></tr>'}</tbody></table></div><div class="quote-totals"><div class="total-line"><span>表示価格の税別合計</span><b>${yen(sub)}</b></div><div class="total-line"><span>消費税（10%）</span><b>${yen(tax)}</b></div><div class="total-line grand"><span>合計概算</span><b>${yen(sub+tax)}</b></div></div>${hasIndividual?'<p class="individual-estimate-note">「別途見積」「個別にご案内」の項目は合計概算に含まれていません。</p>':''}<section class="card notice"><b>重要：</b>これは選択したサービスをまとめた概算です。各社の利用料・機器代などPCSAPO以外への支払いは、明細に記載がない限り含まれません。内容確認後に正式見積書を発行します。</section></section>`}
 function customerDocumentSheets(targets){const docs=[];if(state.data.customerDocView==='estimate'){if(state.data.customerDocScope==='all')docs.push({type:'combined'});else docs.push({type:'estimate',id:targets[0]})}else{targets.forEach(id=>{docs.push({type:'preparation',id},{type:'estimate',id})});if(state.data.customerDocScope==='all'&&targets.length>1)docs.push({type:'combined'})}const total=docs.length;return docs.map((doc,i)=>doc.type==='preparation'?customerPreparationPrintSheet(doc.id,i+1,total):doc.type==='estimate'?customerEstimatePrintSheet(doc.id,i+1,total):customerCombinedEstimatePrintSheet(targets,i+1,total)).join('')}
 function customerDocumentPage(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]),targets=selectedCustomerDocumentServices();if(!selected.length)return `${pageHead('PDF','確認資料・PDF','Customer Documents','ヒアリングで選択したサービスの確認資料を作成します。')}<section class="card empty-maintenance-quote"><h2>対象サービスが選択されていません</h2><p>ヒアリング画面で必要なサービスを選択してください。</p><button class="button primary" data-go="hearing">ヒアリングへ戻る</button></section>`;return `${pageHead('PDF','確認資料・概算PDF','Customer Documents','サービス別資料と、選択したサービスの合計概算を確認できます。')}<section class="card customer-document-controls no-print"><div><span class="eyebrow">DOCUMENT SCOPE</span><h2>プレビューする項目</h2><p>サービスと出力内容を選び、個別資料または合計概算を表示します。</p></div><div class="customer-document-tabs"><button class="button ${state.data.customerDocScope==='all'?'primary':'ghost'}" data-customer-doc-scope="all">選択項目すべて</button>${selected.map(id=>`<button class="button ${state.data.customerDocScope===id?'primary':'ghost'}" data-customer-doc-scope="${id}">${esc(SERVICE_DEFS[id].label)}</button>`).join('')}</div><div class="customer-document-view-tabs"><span>出力内容</span><button class="button ${state.data.customerDocView==='package'?'primary':'ghost'}" data-customer-doc-view="package">資料一式</button><button class="button ${state.data.customerDocView==='estimate'?'primary':'ghost'}" data-customer-doc-view="estimate">概算見積のみ</button></div><div class="section-actions"><button class="button primary" id="customerPrintButton">印刷プレビュー・PDF保存</button><button class="button ghost" id="customerDraftSave">入力・見積内容を端末保存</button><button class="button ghost" data-go="hearing">ヒアリングへ戻る</button></div><p class="storage-note">「印刷プレビュー・PDF保存」を押し、紙に印刷する場合はプリンターを、PDFの場合は保存先で「PDFとして保存」を選択してください。入力データは別端末へ自動同期されません。</p></section><div class="customer-document-preview">${customerDocumentSheets(targets)}</div>`}
-function hearingPage(){const docs=[['doc-store','店舗名・住所・電話'],['doc-hours','営業時間・定休日'],['doc-photo','元サイズの店舗・商品画像'],['doc-video','掲載する動画の元データ'],['doc-logo','ロゴ・SNSリンク'],['doc-menu','確定したメニュー・価格・税率'],['doc-id','各社から指定された本人確認・事業者書類'],['doc-bank','決済サービスの入金口座'],['doc-ipad','iPad利用可否'],['doc-wifi','Wi-Fi環境']];return `${pageHead('12-14','ヒアリング／概算見積','Interview & Estimate','お客様ご自身で希望内容を入力し、追加オプションを含む概算をご確認いただく画面です。')}<section class="customer-input-guide"><div><span>FOR CUSTOMER</span><b>お客様入力用フォーム</b></div><p>分かる範囲で入力・選択してください。未定の項目は空欄のままで構いません。選択内容に応じて概算金額が自動更新されます。</p></section>${preparationGuideHtml()}<div class="grid two">${card('案件基本情報 / Case Information',`<div class="form-grid">${input('storeName','店舗名 / Store Name')}${input('company','運営会社 / Company')}${input('owner','代表者 / Owner')}${input('contact','担当者 / Contact')}${input('phone','電話 / Phone','tel')}${input('email','メール / Email','email')}${input('address','住所 / Address','text','wide')}${input('hours','営業時間 / Hours')}${input('closed','定休日 / Closed')}${textArea('notes','全体メモ / General Notes')}</div>`)}${card('入力の流れ / Workflow','<ol><li>対象サービスを選択</li><li>左側の希望条件を入力</li><li>右側の追加オプションを選択</li><li>自動計算された概算を確認</li></ol>','blue')}</div>${serviceSelectorHtml()}${serviceHearingCards()}${commonHearingOptionsHtml()}${customerEstimateSummaryHtml()}${customerDocumentLauncherHtml()}${maintenanceHearingHtml()}${card('事前準備チェック / Preparation Checklist',choices(docs),'green')}`}
+function customerWizardProgress(step){
+  const steps=[['サービス選択','基本情報を入力'],['ご希望入力','条件とオプション'],['内容確認','概算を確認'],['受付方法','控えを送る']];
+  return `<section class="customer-wizard-progress" aria-label="入力の進行状況">${steps.map(([title,desc],index)=>{const no=index+1,status=no===step?'current':no<step?'done':'';return `<button type="button" class="${status}" data-customer-step="${no}" ${no>step+1?'disabled':''}><b>${no<step?'✓':no}</b><span><strong>${title}</strong><small>${desc}</small></span></button>`}).join('')}</section>`;
+}
+function customerWizardActions(step){
+  return `<nav class="customer-wizard-actions" aria-label="入力画面の移動">${step>1?`<button type="button" class="button ghost" data-customer-step="${step-1}">← 前へ戻る</button>`:'<span></span>'}<div><small>${step} / 4</small>${step<4?`<button type="button" class="button primary" data-customer-step-next="${step+1}">次へ進む →</button>`:'<button type="button" class="button ghost" data-customer-step="3">内容を修正する</button>'}</div></nav>`;
+}
+function customerBasicInformationHtml(){
+  return `<div class="grid two customer-step-one">${card('お客様情報 / Customer Information',`<p class="step-help">店舗名とご連絡先を入力してください。電話番号またはメールアドレスのどちらか一方が必要です。</p><div class="form-grid">${input('storeName','店舗名 / Store Name')}${input('company','運営会社 / Company')}${input('owner','代表者 / Owner')}${input('contact','担当者 / Contact')}${input('phone','電話 / Phone','tel')}${input('email','メール / Email','email')}${input('address','住所 / Address','text','wide')}${input('hours','営業時間 / Hours')}${input('closed','定休日 / Closed')}${textArea('notes','全体メモ / General Notes')}</div>`)}${card('この画面で行うこと','<ol class="simple-operation-list"><li><b>店舗情報を入力</b><span>分かる範囲で構いません。</span></li><li><b>必要なサービスを選択</b><span>選んだ項目だけ次の画面に表示します。</span></li><li><b>次へ進む</b><span>内容はこの端末へ自動的に一時保存されます。</span></li></ol><p class="privacy-mini-note">カード番号、本人確認書類、口座情報、各社サービスのパスワードは入力しないでください。</p>','blue')}</div>${serviceSelectorHtml()}`;
+}
+function customerRequestMessage(){
+  const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]),rows=combinedDocumentQuotes(selected),visible=rows.filter(q=>customerQuotePrice(q).visible),sub=visible.reduce((sum,q)=>sum+(Number(q.qty)||0)*(Number(q.price)||0),0),tax=Math.floor(sub*TAX);
+  return [
+    '【PCSAPO 店舗導入相談】',
+    `案件名：${estimateCaseTitle(selected)}`,
+    `店舗名：${state.data.storeName||'未入力'}`,
+    `ご担当者：${state.data.contact||state.data.owner||'未入力'}`,
+    `電話：${state.data.phone||'未入力'}`,
+    `メール：${state.data.email||'未入力'}`,
+    `希望サービス：${selected.map(id=>SERVICE_DEFS[id].label).join('、')||'未選択'}`,
+    `概算合計（税込）：${yen(sub+tax)}`,
+    `確認番号：${state.data.contractNo}`,
+    '',
+    '詳細は保存した概算見積PDFをご確認ください。',
+    'この送信だけでは正式契約にはなりません。PCSAPOからの受付連絡をお待ちください。'
+  ].join('\n');
+}
+function customerReceptionSummaryHtml(){
+  const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]),rows=combinedDocumentQuotes(selected),visible=rows.filter(q=>customerQuotePrice(q).visible),sub=visible.reduce((sum,q)=>sum+(Number(q.qty)||0)*(Number(q.price)||0),0),tax=Math.floor(sub*TAX);
+  return `<section class="card customer-reception-summary"><span class="eyebrow">FINAL CONFIRMATION</span><h2>依頼内容の最終確認</h2><div class="reception-summary-grid"><div><span>店舗名</span><b>${esc(state.data.storeName||'未入力')}</b></div><div><span>ご担当者</span><b>${esc(state.data.contact||state.data.owner||'未入力')}</b></div><div><span>連絡先</span><b>${esc(state.data.email||state.data.phone||'未入力')}</b></div><div><span>概算合計（税込）</span><b>${yen(sub+tax)}</b></div></div><div class="status-service-list">${selected.map(id=>`<span>${esc(SERVICE_DEFS[id].label)}</span>`).join('')}</div><label class="choice reception-consent"><input type="checkbox" data-check="customer-request-confirm" ${state.data.checks['customer-request-confirm']?'checked':''}><span><b>入力内容と概算金額を確認しました</b><small>正式な作業範囲と料金は、PCSAPOが内容確認後に発行する正式見積書で確定します。</small></span></label></section>
+  <section class="customer-reception-methods"><article><span>おすすめ</span><h3>端末の共有機能</h3><p>スマートフォンの共有画面から、LINEまたはメールを選んで依頼内容を送ります。</p><button type="button" class="button primary" id="customerRequestShare">依頼内容を共有する</button></article><article><span>メール</span><h3>メール本文を作成</h3><p>依頼内容をメール本文へ入れます。保存したPDFはメール画面で添付してください。</p><button type="button" class="button ghost" id="customerRequestMail">メール本文を作る</button></article><article><span>LINE</span><h3>LINEで共有</h3><p>LINEの送信先を選び、依頼内容を共有します。必要に応じてPDFも添付してください。</p><button type="button" class="button line" id="customerRequestLine">LINEを開く</button></article><article><span>対面受付</span><h3>PDF保存・紙で印刷</h3><p>概算見積をPDF保存するか印刷し、対面でPCSAPOへお渡しください。</p><button type="button" class="button ghost" id="customerRequestPrint">PDF・印刷画面へ</button></article></section>
+  <section class="card reception-status-note"><h3>現在の受付方法について</h3><p>メール・LINE・紙で送った時点では、まだ自動受付ではありません。<b>PCSAPOから受付確認の返信が届いた時点で受付完了</b>です。入力内容はこの端末にも保存できます。</p><div class="section-actions"><button type="button" class="button ghost" id="customerRequestSave">この端末に保存</button><button type="button" class="button ghost" id="customerRequestCopy">依頼内容をコピー</button></div></section>`;
+}
+function customerWizardStep(step,docs){
+  if(step===1)return customerBasicInformationHtml();
+  if(step===2)return `${preparationGuideHtml()}${serviceHearingCards()}${commonHearingOptionsHtml()}${maintenanceHearingHtml()}${card('事前準備チェック / Preparation Checklist',choices(docs),'green')}`;
+  if(step===3)return `${customerEstimateSummaryHtml()}${customerDocumentLauncherHtml()}<section class="card estimate-review-guide"><h2>確認するポイント</h2><div class="check-grid"><div class="choice">選択したサービスが合っているか</div><div class="choice">追加オプションに漏れがないか</div><div class="choice">別途見積の項目があるか</div><div class="choice">各社への直接支払いが別にあるか</div></div></section>`;
+  return customerReceptionSummaryHtml();
+}
+function hearingPage(){const docs=[['doc-store','店舗名・住所・電話'],['doc-hours','営業時間・定休日'],['doc-photo','元サイズの店舗・商品画像'],['doc-video','掲載する動画の元データ'],['doc-logo','ロゴ・SNSリンク'],['doc-menu','確定したメニュー・価格・税率'],['doc-id','各社から指定された本人確認・事業者書類'],['doc-bank','決済サービスの入金口座'],['doc-ipad','iPad利用可否'],['doc-wifi','Wi-Fi環境']],step=state.data.customerStep;return `${pageHead('1-4','ヒアリング／概算見積','Guided Request','画面の案内に沿って、必要なサービスとご希望を入力してください。')}<section class="customer-input-guide"><div><span>FOR CUSTOMER</span><b>かんたん4ステップ</b></div><p>分かる範囲で入力してください。未定の項目は空欄のまま進めます。最後に概算と受付方法を確認できます。</p></section>${customerWizardProgress(step)}<div class="customer-wizard-panel" data-wizard-step="${step}">${customerWizardStep(step,docs)}</div>${customerWizardActions(step)}`}
 function maintenanceHearingHtml(){const p=MAINTENANCE_PLANS[state.data.plan]||MAINTENANCE_PLANS.standard;return `<section class="card hearing-maintenance"><span class="eyebrow">AFTER SUPPORT</span><h2>保守・定期点検のご希望</h2><div class="grid two maintenance-hearing-choice"><label class="choice"><input type="radio" name="hearingMaintenance" data-field="maintenanceDecision" value="contract" ${state.data.maintenanceDecision==='contract'?'checked':''}><span><b>希望する</b><small>導入後の更新・点検・運用支援を契約する</small></span></label><label class="choice"><input type="radio" name="hearingMaintenance" data-field="maintenanceDecision" value="none" ${state.data.maintenanceDecision!=='contract'?'checked':''}><span><b>希望しない・後日検討</b><small>現時点では保守契約を申し込まない</small></span></label></div><div class="hearing-plan-select"><span>希望プラン</span>${Object.entries(MAINTENANCE_PLANS).map(([key,plan])=>`<label class="choice"><input type="radio" name="hearingPlan" data-field="plan" value="${key}" ${state.data.plan===key?'checked':''}><span><b>${esc(plan.label)}</b><small>${yen(plan.price)} / 月</small></span></label>`).join('')}</div><p class="selected-maintenance-note">現在の希望：<b>${state.data.maintenanceDecision==='contract'?`${esc(p.label)}プラン（${yen(p.price)}/月）`:'保守契約なし・後日検討'}</b></p></section>`}
 
 function serviceChecklistCards(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]);if(!selected.length)return card('サービス別チェック / Service Checklist','<p>対象サービスを選択すると、作業チェックと記入欄が表示されます。</p>','green');return `<div class="service-section-grid">${selected.map(id=>{const s=SERVICE_DEFS[id];return `<section class="card service-sheet accent-${s.accent}"><span class="service-chip">${esc(s.en)}</span><h2>${esc(s.label)}チェックシート</h2><div class="check-grid">${s.checks.map((label,i)=>choice(`${id}-check-${i}`,label)).join('')}</div><div class="form-grid checklist-notes">${textArea(`${id}CheckNote`,`${s.label} 作業メモ / Work Notes`)}</div></section>`}).join('')}</div>`}
@@ -935,8 +976,16 @@ function bindPage(){
   $('#showArchivedContent')?.addEventListener('change',event=>{contentMasterFilters.showArchived=event.target.checked;applyContentMasterFilters()});
   if(state.page==='contentMaster')applyContentMasterFilters();
   $$('[data-customer-doc-scope],[data-customer-doc-view]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.customerDocScope)state.data.customerDocScope=button.dataset.customerDocScope;if(button.dataset.customerDocView)state.data.customerDocView=button.dataset.customerDocView;markDirty();navigate('customerDocuments')}));
+  $$('[data-customer-step]').forEach(button=>button.addEventListener('click',()=>setCustomerStep(Number(button.dataset.customerStep))));
+  $$('[data-customer-step-next]').forEach(button=>button.addEventListener('click',()=>setCustomerStep(Number(button.dataset.customerStepNext),true)));
   $('#customerDraftSave')?.addEventListener('click',saveCustomerDraft);
   $('#customerPrintButton')?.addEventListener('click',()=>window.print());
+  $('#customerRequestSave')?.addEventListener('click',saveCustomerDraft);
+  $('#customerRequestCopy')?.addEventListener('click',copyCustomerRequest);
+  $('#customerRequestShare')?.addEventListener('click',shareCustomerRequest);
+  $('#customerRequestMail')?.addEventListener('click',mailCustomerRequest);
+  $('#customerRequestLine')?.addEventListener('click',lineCustomerRequest);
+  $('#customerRequestPrint')?.addEventListener('click',()=>{if(!customerRequestConfirmed())return;state.data.customerDocScope='all';state.data.customerDocView='estimate';markDirty();navigate('customerDocuments')});
   $('#printButton')?.addEventListener('click',()=>window.print());
   $('#enterCustomer')?.addEventListener('click',()=>setMode('customer','home'));
   $('#enterAdmin')?.addEventListener('click',()=>sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'?setMode('admin','dashboard'):openAdminDialog());
@@ -944,6 +993,49 @@ function bindPage(){
   initCanvases();
 }
 function navigate(page){if(page==='customerView'){setMode('customer','home');return}state.page=page;render();window.scrollTo({top:0,behavior:'smooth'});closeSidebar()}
+function customerStepOneValid(){
+  const selected=SERVICE_ORDER.some(id=>state.data.selectedServices[id]);
+  if(!String(state.data.storeName||'').trim()){toast('店舗名を入力してください');$('#f-storeName')?.focus();return false}
+  if(!String(state.data.contact||'').trim()&&!String(state.data.owner||'').trim()){toast('ご担当者名または代表者名を入力してください');$('#f-contact')?.focus();return false}
+  if(!String(state.data.phone||'').trim()&&!String(state.data.email||'').trim()){toast('電話番号またはメールアドレスを入力してください');$('#f-phone')?.focus();return false}
+  if(!selected){toast('希望するサービスを1つ以上選択してください');return false}
+  return true;
+}
+function setCustomerStep(step,validateForward=false){
+  const target=Math.min(4,Math.max(1,Number(step)||1));
+  if((validateForward||target>state.data.customerStep)&&state.data.customerStep===1&&!customerStepOneValid())return;
+  state.data.customerStep=target;
+  markDirty();
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function customerRequestConfirmed(){
+  if(state.data.checks['customer-request-confirm'])return true;
+  toast('入力内容と概算金額の確認にチェックしてください');
+  $('.reception-consent input')?.focus();
+  return false;
+}
+async function copyCustomerRequest(){
+  if(!customerRequestConfirmed())return;
+  try{await navigator.clipboard.writeText(customerRequestMessage());toast('依頼内容をコピーしました')}catch{toast('コピーできませんでした。端末の共有機能をご利用ください')}
+}
+async function shareCustomerRequest(){
+  if(!customerRequestConfirmed())return;
+  saveCustomerDraft();
+  const data={title:`PCSAPO導入相談 ${state.data.storeName}`,text:customerRequestMessage(),url:location.href};
+  if(navigator.share){try{await navigator.share(data)}catch(error){if(error?.name!=='AbortError')toast('共有できませんでした')}}else await copyCustomerRequest();
+}
+function mailCustomerRequest(){
+  if(!customerRequestConfirmed())return;
+  saveCustomerDraft();
+  const subject=`PCSAPO導入相談｜${state.data.storeName||'店舗名未入力'}`;
+  location.href=`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(customerRequestMessage())}`;
+}
+function lineCustomerRequest(){
+  if(!customerRequestConfirmed())return;
+  saveCustomerDraft();
+  open(`https://line.me/R/msg/text/?${encodeURIComponent(customerRequestMessage())}`,'_blank');
+}
 
 function initCanvases(){
   $$('canvas[data-signature]').forEach(canvas=>{const ctx=canvas.getContext('2d');let drawing=false;
