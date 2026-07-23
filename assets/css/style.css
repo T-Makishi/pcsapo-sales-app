@@ -199,3 +199,5 @@ body[data-mode="entry"] .main-wrap{margin-left:0}body[data-mode="entry"] #conten
 @media print{.base-scope li,.scope-option-boundary,.data-delivery-priority>div{break-inside:avoid}}
 .base-scope li span{font-size:15px}
 @media(max-width:650px){.base-scope li span{font-size:14px}}
+.service-base-scope{margin:0 0 26px}.service-base-scope .base-scope{margin:0;border-top:7px solid #176fe5;background:linear-gradient(135deg,#eef6ff,#fff);box-shadow:0 16px 36px rgba(25,73,122,.12)}.service-base-scope .base-scope-head>span{display:inline-flex;align-items:center;min-height:32px;padding:6px 11px;border-radius:99px;background:#176fe5;color:#fff}.service-base-scope .base-scope-head>b{font-size:24px}.service-base-pair{display:grid;grid-template-columns:1fr;gap:24px}.service-base-pair>div>h2{margin:7px 0 13px;font-size:24px}
+@media(max-width:650px){.service-base-scope .base-scope-head>b{font-size:21px}.service-base-pair>div>h2{font-size:21px}}

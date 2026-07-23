@@ -1,4 +1,4 @@
-const CACHE='pcsapo-sales-v28';
+const CACHE='pcsapo-sales-v29';
 const ASSETS=['./','./index.html','./assets/css/style.css','./assets/js/app.js','./manifest.webmanifest','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/docs/square-funfo-presentation.pdf'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([
