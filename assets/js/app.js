@@ -90,8 +90,15 @@ const ACCOUNT_SETUP_GUIDES = {
   website:{
     service:'STUDIO.Design',
     title:'お客様のアカウントで制作を開始します',
-    officialUrl:'https://studio.design/ja',
-    officialLabel:'STUDIO.Design公式サイト',
+    officialUrl:'https://app.studio.design/ja/signup',
+    officialLabel:'アカウント登録を開く',
+    qrImage:'assets/images/qr-studio-signup.png',
+    checkedAt:'2026年7月23日',
+    officialLinks:[
+      ['アカウント登録','https://help.studio.design/ja/articles/6227154-studio%E3%81%AE%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E6%96%B0%E8%A6%8F%E7%99%BB%E9%8C%B2%E3%81%99%E3%82%8B'],
+      ['プランの選び方','https://help.studio.design/ja/articles/4066297-%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%83%97%E3%83%A9%E3%83%B3%E3%81%AE%E9%81%B8%E6%96%B9'],
+      ['編集者を招待','https://help.studio.design/ja/articles/2639135-%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%81%AB%E3%83%A6%E3%83%BC%E3%82%B6%E3%83%BC%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E6%8B%9B%E5%BE%85%E3%81%99%E3%82%8B']
+    ],
     steps:[
       ['1','お客様が登録','お客様ご自身のメールアドレスでアカウントを作成します。'],
       ['2','プランを選択','無料または有料プランを決め、有料の場合はお客様がカード情報を登録します。'],
@@ -105,7 +112,14 @@ const ACCOUNT_SETUP_GUIDES = {
     service:'Square',
     title:'事業主様が登録したアカウントで設定します',
     officialUrl:'https://squareup.com/signup/jp',
-    officialLabel:'Square公式登録ページ',
+    officialLabel:'アカウント登録を開く',
+    qrImage:'assets/images/qr-square-signup.png',
+    checkedAt:'2026年7月23日',
+    officialLinks:[
+      ['アカウント設定ガイド','https://squareup.com/help/jp/ja/article/5123-square-get-started-guide'],
+      ['申込審査FAQ','https://squareup.com/help/jp/ja/article/5682-account-on-boarding-assessment-faqs'],
+      ['Squareヘルプセンター','https://squareup.com/help/jp/ja']
+    ],
     steps:[
       ['1','事業主様が登録','事業主様が公式画面からアカウントを作成します。'],
       ['2','本人情報を登録','本人確認、事業情報、入金口座、決済申込みはお客様が入力します。'],
@@ -118,8 +132,15 @@ const ACCOUNT_SETUP_GUIDES = {
   funfo:{
     service:'funfo',
     title:'店舗所有のアカウントで構築します',
-    officialUrl:'https://www.funfo.jp/',
-    officialLabel:'funfo公式サイト',
+    officialUrl:'https://apps.apple.com/jp/app/funfo-pos%E3%83%AC%E3%82%B8/id1489954821',
+    officialLabel:'funfoアプリを開く',
+    qrImage:'assets/images/qr-funfo-app.png',
+    checkedAt:'2026年7月23日',
+    officialLinks:[
+      ['funfoアプリ','https://apps.apple.com/jp/app/funfo-pos%E3%83%AC%E3%82%B8/id1489954821'],
+      ['サポートセンター','https://www.funfo.jp/index.php/support/'],
+      ['導入前の準備','https://www.funfo.jp/index.php/preparation/']
+    ],
     steps:[
       ['1','お客様が登録','店舗で継続利用するメールアドレスでfunfoアカウントを作成します。'],
       ['2','契約内容を確認','Freeまたは有料プラン、オンライン決済の要否を確認します。'],
@@ -439,8 +460,9 @@ function servicePreparationHtml(id){const guide=CUSTOMER_PREPARATION[id];if(!gui
 function accountSetupGuideHtml(id,compact=false,interactive=false){
   const guide=ACCOUNT_SETUP_GUIDES[id];
   if(!guide)return '';
+  const officialLinks=(guide.officialLinks||[[guide.officialLabel,guide.officialUrl]]).map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`).join('');
   const confirmation=interactive?`<fieldset class="account-confirmations"><legend>お客様確認チェック</legend>${guide.checks.map(([key,label])=>choice(key,label)).join('')}</fieldset>`:'<div class="account-confirmation-location"><b>確認チェックはヒアリング画面で行います</b><span>このページは登録手順のご案内です。実際の登録状況は「ヒアリング／概算見積」で確認します。</span></div>';
-  return `<section class="account-setup-guide ${compact?'compact':''}"><div class="account-setup-head"><div><span>ACCOUNT & PRIVACY</span><h2>${esc(guide.title)}</h2><p>${esc(guide.service)}の契約者・支払者はお客様です。PCSAPOは共有されたパスワードではなく、招待された作業権限で設定します。</p></div><a href="${esc(guide.officialUrl)}" target="_blank" rel="noopener">${esc(guide.officialLabel)}</a></div><div class="account-setup-steps">${guide.steps.map(([no,title,desc])=>`<article><b>${esc(no)}</b><div><h3>${esc(title)}</h3><p>${esc(desc)}</p></div></article>`).join('')}</div><div class="privacy-protection-note"><b>プライバシー保護のため</b><p>${esc(guide.note)}</p></div>${confirmation}</section>`;
+  return `<section class="account-setup-guide ${compact?'compact':''}"><div class="account-guide-status"><span>PCSAPO補助案内</span><small>公式情報確認日：${esc(guide.checkedAt)}</small></div><div class="account-setup-head"><div><span>ACCOUNT & PRIVACY</span><h2>${esc(guide.title)}</h2><p>${esc(guide.service)}の契約者・支払者はお客様です。PCSAPOは共有されたパスワードではなく、招待された作業権限で設定します。</p></div><a href="${esc(guide.officialUrl)}" target="_blank" rel="noopener">${esc(guide.officialLabel)}</a></div><div class="account-setup-steps">${guide.steps.map(([no,title,desc])=>`<article><b>${esc(no)}</b><div><h3>${esc(title)}</h3><p>${esc(desc)}</p></div></article>`).join('')}</div><div class="official-guide-links"><div><b>最新の公式手順</b><span>登録画面や料金・条件は変更される場合があります。</span></div><nav aria-label="${esc(guide.service)}公式手順">${officialLinks}</nav></div><div class="privacy-protection-note"><b>プライバシー保護のため</b><p>${esc(guide.note)}</p></div>${confirmation}</section>`;
 }
 function subsidyGuidanceHtml(){return `<section class="subsidy-guidance"><div><span>PUBLIC INFORMATION</span><h2>補助金・支援制度の情報案内</h2><p>国・自治体の公開情報と公式相談窓口を無料でご案内します。申請可否の判断、申請書・事業計画書の作成、提出代行、採択保証は行いません。</p></div><label class="choice"><input type="checkbox" data-check="subsidy-guidance-requested" ${state.data.checks['subsidy-guidance-requested']?'checked':''}><span><b>案内を希望する</b><small>希望確認のみです。概算見積には加算されません。</small></span></label></section>`}
 function hearingOptionsHtml(id){const names=HEARING_OPTION_NAMES[id]||[],group=SERVICE_DEFS[id]?.category||'',items=names.map(name=>masterItemByName(name,group)).filter(item=>item&&item.customerVisible);if(!items.length)return '';return `<div class="hearing-options"><div class="hearing-options-head"><div><span>追加オプション / OPTIONS</span><b>基本作業に含まれない追加対応です</b></div><small>選択内容を概算へ反映</small></div><div class="hearing-option-list">${items.map(item=>{const q=hearingQuote(item),checked=Boolean(q);return `<label class="hearing-option-row ${checked?'selected':''}"><input type="checkbox" data-hearing-option="${esc(item.id)}" ${checked?'checked':''}><span><b>${esc(hearingOptionLabel(item))}</b><small>${esc(item.description||'必要に応じて追加する作業です。')}</small></span><strong>${priceText(item,true)}</strong><input type="number" min="1" inputmode="numeric" aria-label="${esc(hearingOptionLabel(item))}の数量" data-hearing-qty="${esc(item.id)}" value="${q?.qty||1}"></label>`}).join('')}</div></div>`}
@@ -453,7 +475,7 @@ function selectedCustomerDocumentServices(){const selected=SERVICE_ORDER.filter(
 function serviceHearingSummary(id){return SERVICE_DEFS[id].fields.map(([key,label,type='text',options=[]])=>{const stored=state.data[key],value=stored!==undefined&&stored!==''?stored:type==='select'?options[0]:'';return value?{label,value}:null}).filter(Boolean).slice(0,6)}
 function serviceDocumentQuotes(id){const category=SERVICE_DEFS[id].category;return state.data.quotes.filter(q=>q.name&&(q.category||inferQuoteCategory(q.name,q.source))===category)}
 function customerDocumentLauncherHtml(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]);return `<section class="card customer-document-launcher"><div><span class="eyebrow">PREVIEW & PDF</span><h2>選択内容の確認資料・概算見積</h2><p>サービス別の資料と概算見積、選択したサービス全体の合計見積を確認できます。</p></div><div class="customer-document-service-actions">${selected.map(id=>`<div><b>${esc(SERVICE_DEFS[id].label)}</b><span><button class="button ghost" data-customer-doc-scope="${id}" data-customer-doc-view="package">資料一式</button><button class="button ghost" data-customer-doc-scope="${id}" data-customer-doc-view="estimate">概算見積</button></span></div>`).join('')||'<p class="muted">対象サービスを選択してください。</p>'}</div><div class="section-actions"><button class="button primary" data-customer-doc-scope="all" data-customer-doc-view="package" ${selected.length?'':'disabled'}>選択項目をまとめて確認</button><button class="button ghost" data-customer-doc-scope="all" data-customer-doc-view="estimate" ${selected.length?'':'disabled'}>合計概算見積を確認</button><button class="button ghost" id="customerDraftSave">入力・見積内容を端末保存</button></div><small>概算見積は選択内容を自動集計します。正式見積書は仕様確認後にPCSAPOが発行します。</small></section>`}
-function accountPrintSummary(id){const guide=ACCOUNT_SETUP_GUIDES[id];if(!guide)return `<section class="customer-print-account no-account"><div><span>ACCOUNT</span><h3>外部サービスのアカウント登録はありません</h3></div><p>仕様・素材・作業範囲を確認後、PCSAPOが制作または実施します。</p></section>`;return `<section class="customer-print-account"><div class="customer-print-section-head"><div><span>ACCOUNT & PRIVACY</span><h3>事前アカウント登録</h3></div><div class="customer-print-official"><a href="${esc(guide.officialUrl)}" target="_blank" rel="noopener">${esc(guide.officialLabel)}</a><small>${esc(guide.officialUrl)}</small></div></div><div class="customer-print-account-steps">${guide.steps.map(([no,title,desc])=>`<div><b>${esc(no)}</b><span><strong>${esc(title)}</strong><small>${esc(desc)}</small></span></div>`).join('')}</div><p class="customer-print-privacy">${esc(guide.note)}</p><div class="customer-print-checks">${guide.checks.map(([key,label])=>`<span class="${state.data.checks[key]?'done':''}">${state.data.checks[key]?'✓':'□'} ${esc(label)}</span>`).join('')}</div></section>`}
+function accountPrintSummary(id){const guide=ACCOUNT_SETUP_GUIDES[id];if(!guide)return `<section class="customer-print-account no-account"><div><span>ACCOUNT</span><h3>外部サービスのアカウント登録はありません</h3></div><p>仕様・素材・作業範囲を確認後、PCSAPOが制作または実施します。</p></section>`;return `<section class="customer-print-account"><div class="customer-print-section-head"><div><span>PCSAPO ACCOUNT GUIDE</span><h3>事前アカウント登録</h3><small>公式情報確認日：${esc(guide.checkedAt)}</small></div><div class="customer-print-official"><img src="${esc(guide.qrImage)}" alt="${esc(guide.service)}公式登録ページのQRコード"><span><a href="${esc(guide.officialUrl)}" target="_blank" rel="noopener">${esc(guide.officialLabel)}</a><small>${esc(guide.officialUrl)}</small></span></div></div><div class="customer-print-account-steps">${guide.steps.map(([no,title,desc])=>`<div><b>${esc(no)}</b><span><strong>${esc(title)}</strong><small>${esc(desc)}</small></span></div>`).join('')}</div><p class="customer-print-privacy">${esc(guide.note)}</p><div class="customer-print-checks">${guide.checks.map(([key,label])=>`<span class="${state.data.checks[key]?'done':''}">${state.data.checks[key]?'✓':'□'} ${esc(label)}</span>`).join('')}</div><p class="customer-print-source-note">本資料はPCSAPOが登録前の確認事項をまとめた補助資料です。最新の登録手順・料金・利用条件はQRコードから各社公式ページをご確認ください。</p></section>`}
 function customerPreparationPrintSheet(id,index,total){const service=SERVICE_DEFS[id],prepare=CUSTOMER_PREPARATION[id],answers=serviceHearingSummary(id),flow=SERVICE_WORKFLOWS[id]||[];return `<section class="card print-sheet customer-preparation-print"><div class="print-doc-head"><span>${String(index).padStart(2,'0')}</span><div><small>CUSTOMER PREPARATION GUIDE ${index}/${total}</small><h2>${esc(service.label)} 事前確認資料</h2></div></div><div class="customer-print-meta"><span><b>店舗名</b>${esc(state.data.storeName||'未入力')}</span><span><b>作成日</b>${esc(state.data.date||'')}</span></div><section class="customer-print-preparation"><div class="customer-print-section-head"><div><span>PLEASE PREPARE</span><h3>事前にご用意いただくもの</h3></div><small>詳細説明はWeb画面で確認できます</small></div><ul>${prepare.items.slice(0,5).map(item=>`<li>${esc(item)}</li>`).join('')}</ul></section>${accountPrintSummary(id)}<section class="customer-print-flow"><div class="customer-print-section-head"><div><span>WORKFLOW</span><h3>制作・導入の流れ</h3></div></div><div>${flow.map((item,i)=>`<span><b>${i+1}</b>${esc(item)}</span>`).join('')}</div></section><section class="customer-print-hearing"><h3>ヒアリング内容の要約</h3><div>${answers.length?answers.map(item=>`<span><b>${esc(item.label)}</b>${esc(item.value)}</span>`).join(''):'<p>詳細条件は未入力です。</p>'}</div></section><p class="customer-print-note">本人確認・口座・カード情報は、お客様ご自身で各社公式画面へ入力します。ID・パスワードはPCSAPOへ共有しません。</p></section>`}
 function customerEstimatePrintSheet(id,index,total){const service=SERVICE_DEFS[id],rows=serviceDocumentQuotes(id),priced=rows.filter(q=>customerQuotePrice(q).visible),sub=priced.reduce((sum,q)=>sum+(Number(q.qty)||0)*(Number(q.price)||0),0),tax=Math.floor(sub*TAX),hasIndividual=rows.some(q=>!customerQuotePrice(q).visible);return `<section class="card print-sheet customer-estimate-print"><div class="print-doc-head"><span>${String(index).padStart(2,'0')}</span><div><small>PRELIMINARY ESTIMATE ${index}/${total}</small><h2>${esc(service.label)} 概算見積書</h2></div></div>${quoteIssuer(state.data)}<div class="customer-estimate-scope"><b>対象サービス</b><span>${esc(service.label)}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>項目</th><th>数量</th><th>単価</th><th>小計</th></tr></thead><tbody>${rows.length?rows.map(q=>{const shown=customerQuotePrice(q);return `<tr><td>${esc(q.name)}</td><td>${q.qty} ${esc(q.unit||'式')}</td><td>${shown.visible?yen(q.price):shown.label}</td><td>${shown.label}</td></tr>`}).join(''):'<tr><td colspan="4">選択された見積項目はありません。</td></tr>'}</tbody></table></div><div class="quote-totals"><div class="total-line"><span>表示価格の税別合計</span><b>${yen(sub)}</b></div><div class="total-line"><span>消費税（10%）</span><b>${yen(tax)}</b></div><div class="total-line grand"><span>概算合計</span><b>${yen(sub+tax)}</b></div></div>${hasIndividual?'<p class="individual-estimate-note">「別途見積」「個別にご案内」の項目は概算合計に含まれていません。</p>':''}<section class="card notice"><b>重要：</b>この資料はヒアリング時点の概算です。仕様、素材、機器、各社利用料、訪問範囲を確認後、PCSAPOが正式見積書を発行します。</section></section>`}
 function combinedDocumentQuotes(targets){const categories=new Set(targets.map(id=>SERVICE_DEFS[id].category));return state.data.quotes.filter(q=>q.name&&categories.has(q.category||inferQuoteCategory(q.name,q.source)))}

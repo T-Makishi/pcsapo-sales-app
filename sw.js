@@ -1,5 +1,5 @@
-const CACHE='pcsapo-sales-v40';
-const ASSETS=['./','./index.html','./assets/css/style.css','./assets/js/app.js','./manifest.webmanifest','./assets/icons/favicon-32.png','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/images/pcsapo-logo.png','./assets/images/pcsapo-stamp.png','./assets/docs/square-funfo-presentation.pdf'];
+const CACHE='pcsapo-sales-v41';
+const ASSETS=['./','./index.html','./assets/css/style.css','./assets/js/app.js','./manifest.webmanifest','./assets/icons/favicon-32.png','./assets/icons/icon-192.png','./assets/icons/icon-512.png','./assets/images/pcsapo-logo.png','./assets/images/pcsapo-stamp.png','./assets/images/qr-studio-signup.png','./assets/images/qr-square-signup.png','./assets/images/qr-funfo-app.png','./assets/docs/square-funfo-presentation.pdf'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(Promise.all([
   caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),
