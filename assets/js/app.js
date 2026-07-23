@@ -552,9 +552,54 @@ function contentMasterPage(){
 
 function studioPlanGuideHtml(){return `<section class="studio-plan-guide"><div class="studio-plan-head"><div><span>PUBLIC URL & CUSTOM DOMAIN</span><h2>STUDIO.Design 無料プランと有料プランの違い</h2></div><a href="https://studio.design/ja/pricing#personal" target="_blank" rel="noopener">公式料金を確認</a></div><p class="studio-plan-intro">PCSAPOでは、初期費用と月額費用を抑えたい場合に無料プランをご案内しています。独自ドメインが必要な場合は、ドメインを別途取得し、対応する有料プランへ接続します。</p><div class="studio-plan-grid"><article class="studio-free"><span>低コストで開始</span><h3>無料プラン</h3><strong>月額0円</strong><p>STUDIO.Designが提供する共通ドメインで公開します。</p><code>https://お客様指定名.studio.site/</code><small>「お客様指定名」は候補をお客様に決めていただきます。利用状況によって希望文字列を使えない場合があります。</small></article><article class="studio-paid"><span>独自URLで運用</span><h3>有料プラン</h3><strong>プラン料金＋ドメイン費用</strong><p>お客様が取得した独自ドメインを、対応する有料プランへ接続して公開します。</p><code>https://www.店舗名.com/</code><small>ドメイン取得・更新費とSTUDIO.Design利用料は、ホームページ制作費とは別に発生します。</small></article></div><div class="studio-domain-note"><b>重要：無料プランのURLは独自ドメインではありません。</b><p><code>studio.site</code>が付くURLはSTUDIO.Designの共通ドメインです。店舗専用の独自ドメインをご希望の場合は、有料プランとドメイン取得が必要です。</p></div></section>`}
 
+function caseSearchText(item){
+  return [item.caseName,item.storeName,item.company,item.owner,item.contact,item.phone,item.email,item.contractNo,...selectedServiceIds(item).map(id=>SERVICE_DEFS[id].label)].join(' ').toLocaleLowerCase('ja-JP');
+}
+function caseContractLabel(item){
+  if(item.contractDecision==='yes')return '契約済み';
+  if(item.contractDecision==='no')return '未契約';
+  return '検討中';
+}
+function caseListItemHtml(item,location='dashboard',audience='admin'){
+  const current=item.id===state.data.id;
+  const customerMode=audience==='customer';
+  const services=selectedServiceIds(item).map(id=>esc(SERVICE_DEFS[id].label)).join('・')||'個別対応';
+  const updated=item.updatedAt?new Date(item.updatedAt).toLocaleString('ja-JP'):'保存日時不明';
+  return `<article class="case-item case-manager-item ${current?'current':''}" data-case-row="${esc(item.id)}">
+    <div class="case-item-main">
+      <div class="case-manager-badges"><span class="case-current-label">${current?'現在編集中':'保存案件'}</span><span>${esc(caseContractLabel(item))}</span>${item.subscription?'<span class="support">保守あり</span>':''}</div>
+      <h3>${esc(item.caseName||'名称未設定')}</h3>
+      <p>${esc(item.storeName||'店舗名未入力')} <small>${esc(item.contractNo||'契約番号未発行')}</small></p>
+      <div class="case-manager-meta"><span>${services}</span><span>更新 ${updated}</span><strong>${yen(quoteTotalFor(item))}</strong></div>
+    </div>
+    <div class="case-actions">
+      <button class="button primary" data-case-open="${esc(item.id)}" data-case-page="hearing" data-case-mode="${esc(audience)}">開いて編集</button>
+      ${customerMode?'':`<button class="button ghost" data-case-open="${esc(item.id)}" data-case-page="pricing">見積書</button>
+      <button class="button ghost" data-case-open="${esc(item.id)}" data-case-page="print">PDF・印刷</button>`}
+      <button class="button ghost" data-case-copy="${esc(item.id)}">複製</button>
+      <button class="button danger" data-case-delete="${esc(item.id)}">削除</button>
+    </div>
+  </article>`;
+}
+function dashboardCaseManagerHtml(list){
+  return `<section class="card dashboard-case-manager">
+    <div class="dashboard-case-head">
+      <div><span class="eyebrow">CASE MANAGEMENT</span><h2>案件管理</h2><p>案件名・店舗名・担当者・契約番号から検索し、対象案件を開いて編集できます。</p></div>
+      <div class="section-actions"><button class="button primary" id="dashboardNewCase">＋ 新規案件</button><button class="button ghost" id="dashboardOpenCaseSearch">詳細検索・バックアップ</button></div>
+    </div>
+    <div class="dashboard-case-search">
+      <label for="dashboardCaseSearch">案件を検索</label>
+      <input id="dashboardCaseSearch" type="search" placeholder="案件名・店舗名・担当者・電話・契約番号">
+      <select id="dashboardCaseFilter" aria-label="案件の状態"><option value="all">すべての案件</option><option value="current">現在編集中</option><option value="contracted">契約済み</option><option value="maintenance">保守契約あり</option></select>
+    </div>
+    <div class="dashboard-case-summary"><b id="dashboardCaseCount">${list.length}件</b><span>保存先：この端末</span><span>別端末とは自動同期されません</span></div>
+    <div id="dashboardCaseList" class="dashboard-case-list">${list.length?list.map(item=>caseListItemHtml(item)).join(''):'<div class="dashboard-case-empty"><b>保存案件はまだありません</b><p>「新規案件」から入力を開始し、上部の保存ボタンで案件一覧へ追加してください。</p></div>'}</div>
+  </section>`;
+}
+
 const pages = {
 entry(){return entryPage()},
-dashboard(){const list=allCases(), contracts=list.filter(x=>x.contractDecision==='yes').length, support=list.filter(x=>x.subscription).length, quotes=list.filter(x=>x.quotes?.length).length;return `${pageHead('00','営業ダッシュボード','Sales Dashboard','案件・見積・契約・保守の状況を、ひと目で確認できます。')}<div class="grid four stats">${[['案件数',list.length,'orange'],['見積件数',quotes,'blue'],['契約件数',contracts,'orange'],['保守契約',support,'blue']].map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="metric ${x[2]}">${x[1]}<small> 件</small></div></div>`).join('')}</div><div class="grid two" style="margin-top:18px"><section class="card"><h2>案件サマリー / Summary</h2><div class="bar-chart">${[['案件',list.length,''],['見積',quotes,'blue'],['契約',contracts,''],['保守',support,'blue']].map(([l,v,c])=>`<div class="bar ${c}" style="--h:${Math.max(8,Math.min(100,v*15))}%"><b>${v}</b><span>${l}</span></div>`).join('')}</div></section>${card('クイックスタート / Quick Start','<p>案件テンプレートから始めると、対象サービス・ヒアリング・見積が最初から仕分けされた状態で作成できます。</p><div class="section-actions"><button class="button primary" data-go="templates">テンプレートから作成</button><button class="button ghost" data-go="pricing">見積を作成</button><button class="button ghost" data-go="priceMaster">料金を編集</button></div>','green')}</div>`},
+dashboard(){const list=allCases().map(item=>{const normalized=structuredClone(item);normalizeData(normalized);return normalized}).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))), contracts=list.filter(x=>x.contractDecision==='yes').length, support=list.filter(x=>x.subscription).length, quotes=list.filter(x=>implementationQuoteLines(x).length).length;return `${pageHead('00','営業ダッシュボード','Sales Dashboard','案件を検索し、見積・契約・保守の状況を確認できます。')}<div class="grid four stats">${[['案件数',list.length,'orange'],['見積件数',quotes,'blue'],['契約件数',contracts,'orange'],['保守契約',support,'blue']].map(x=>`<div class="card"><span class="muted">${x[0]}</span><div class="metric ${x[2]}">${x[1]}<small> 件</small></div></div>`).join('')}</div>${dashboardCaseManagerHtml(list)}<div class="grid two dashboard-secondary"><section class="card"><h2>案件サマリー / Summary</h2><div class="bar-chart">${[['案件',list.length,''],['見積',quotes,'blue'],['契約',contracts,''],['保守',support,'blue']].map(([l,v,c])=>`<div class="bar ${c}" style="--h:${Math.max(8,Math.min(100,v*15))}%"><b>${v}</b><span>${l}</span></div>`).join('')}</div></section>${card('クイックスタート / Quick Start','<p>案件テンプレートから始めると、対象サービス・ヒアリング・見積が仕分けされた状態で作成できます。</p><div class="section-actions"><button class="button primary" data-go="templates">テンプレートから作成</button><button class="button ghost" data-go="pricing">現在案件の見積</button><button class="button ghost" data-go="priceMaster">料金を編集</button></div>','green')}</div>`},
 templates(){return templatesPage()},
 home(){return customerHomePage()},
 position(){return positionPage()},
@@ -716,13 +761,16 @@ function customerEstimatePrintSheet(id,index,total){const service=SERVICE_DEFS[i
 function combinedDocumentQuotes(){return implementationQuoteLines(state.data)}
 function customerCombinedEstimatePrintSheet(targets,index,total){const rows=combinedDocumentQuotes(targets),priced=rows.filter(q=>customerQuotePrice(q).visible),sub=priced.reduce((sum,q)=>sum+(Number(q.qty)||0)*(Number(q.price)||0),0),tax=Math.floor(sub*TAX),hasIndividual=rows.some(q=>!customerQuotePrice(q).visible),labels=targets.map(id=>SERVICE_DEFS[id].label);return `<section class="card print-sheet customer-estimate-print customer-combined-estimate"><div class="print-doc-head"><span>${String(index).padStart(2,'0')}</span><div><small>COMBINED PRELIMINARY ESTIMATE ${index}/${total}</small><h2>選択サービス 合計概算見積書</h2></div></div>${quoteIssuer(state.data,estimateCaseTitle(targets))}<div class="customer-estimate-scope"><b>対象サービス</b><span>${esc(labels.join('・'))}</span></div><div class="table-wrap"><table class="data-table"><thead><tr><th>区分</th><th>項目</th><th>数量</th><th>小計</th></tr></thead><tbody>${rows.length?rows.map(q=>{const shown=customerQuotePrice(q);return `<tr><td>${esc(q.category||'その他')}</td><td>${esc(q.name)}</td><td>${q.qty} ${esc(q.unit||'式')}</td><td>${shown.label}</td></tr>`}).join(''):'<tr><td colspan="4">選択された見積項目はありません。</td></tr>'}</tbody></table></div><div class="quote-totals"><div class="total-line"><span>表示価格の税別合計</span><b>${yen(sub)}</b></div><div class="total-line"><span>消費税（10%）</span><b>${yen(tax)}</b></div><div class="total-line grand"><span>合計概算</span><b>${yen(sub+tax)}</b></div></div>${hasIndividual?'<p class="individual-estimate-note">「別途見積」「個別にご案内」の項目は合計概算に含まれていません。</p>':''}<section class="card notice"><b>重要：</b>これは選択したサービスをまとめた概算です。各社の利用料・機器代などPCSAPO以外への支払いは、明細に記載がない限り含まれません。内容確認後に正式見積書を発行します。</section></section>`}
 function customerDocumentSheets(targets){const docs=[];if(state.data.customerDocView==='estimate'){if(state.data.customerDocScope==='all')docs.push({type:'combined'});else docs.push({type:'estimate',id:targets[0]})}else{targets.forEach(id=>{docs.push({type:'preparation',id},{type:'estimate',id})});if(state.data.customerDocScope==='all'&&targets.length>1)docs.push({type:'combined'})}const total=docs.length;return docs.map((doc,i)=>doc.type==='preparation'?customerPreparationPrintSheet(doc.id,i+1,total):doc.type==='estimate'?customerEstimatePrintSheet(doc.id,i+1,total):customerCombinedEstimatePrintSheet(targets,i+1,total)).join('')}
-function customerDocumentPage(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]),targets=selectedCustomerDocumentServices();if(!selected.length)return `${pageHead('PDF','確認資料・PDF','Customer Documents','ヒアリングで選択したサービスの確認資料を作成します。')}<section class="card empty-maintenance-quote"><h2>対象サービスが選択されていません</h2><p>ヒアリング画面で必要なサービスを選択してください。</p><button class="button primary" data-go="hearing">ヒアリングへ戻る</button></section>`;return `${pageHead('PDF','確認資料・概算PDF','Customer Documents','サービス別資料と、選択したサービスの合計概算を確認できます。')}<section class="card customer-document-controls no-print"><div><span class="eyebrow">DOCUMENT SCOPE</span><h2>プレビューする項目</h2><p>サービスと出力内容を選び、個別資料または合計概算を表示します。</p></div><div class="customer-document-tabs"><button class="button ${state.data.customerDocScope==='all'?'primary':'ghost'}" data-customer-doc-scope="all">選択項目すべて</button>${selected.map(id=>`<button class="button ${state.data.customerDocScope===id?'primary':'ghost'}" data-customer-doc-scope="${id}">${esc(SERVICE_DEFS[id].label)}</button>`).join('')}</div><div class="customer-document-view-tabs"><span>出力内容</span><button class="button ${state.data.customerDocView==='package'?'primary':'ghost'}" data-customer-doc-view="package">資料一式</button><button class="button ${state.data.customerDocView==='estimate'?'primary':'ghost'}" data-customer-doc-view="estimate">概算見積のみ</button></div><div class="section-actions"><button class="button primary" id="customerPrintButton">印刷プレビュー・PDF保存</button><button class="button ghost" id="customerDraftSave">入力・見積内容を端末保存</button><button class="button ghost" data-go="hearing">ヒアリングへ戻る</button></div><p class="storage-note">「印刷プレビュー・PDF保存」を押し、紙に印刷する場合はプリンターを、PDFの場合は保存先で「PDFとして保存」を選択してください。入力データは別端末へ自動同期されません。</p></section><div class="customer-document-preview">${customerDocumentSheets(targets)}</div>`}
+function customerDocumentPage(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]),targets=selectedCustomerDocumentServices();if(!selected.length)return `${pageHead('PDF','確認資料・PDF','Customer Documents','ヒアリングで選択したサービスの確認資料を作成します。')}<section class="card empty-maintenance-quote"><h2>対象サービスが選択されていません</h2><p>ヒアリング画面で必要なサービスを選択してください。</p><button class="button primary" data-go="hearing">ヒアリングへ戻る</button></section>`;return `${pageHead('PDF','確認資料・概算PDF','Customer Documents','サービス別資料と、選択したサービスの合計概算を確認できます。')}<section class="card customer-document-controls no-print"><div><span class="eyebrow">DOCUMENT SCOPE</span><h2>プレビューする項目</h2><p>サービスと出力内容を選び、個別資料または合計概算を表示します。</p></div><div class="customer-document-tabs"><button class="button ${state.data.customerDocScope==='all'?'primary':'ghost'}" data-customer-doc-scope="all">選択項目すべて</button>${selected.map(id=>`<button class="button ${state.data.customerDocScope===id?'primary':'ghost'}" data-customer-doc-scope="${id}">${esc(SERVICE_DEFS[id].label)}</button>`).join('')}</div><div class="customer-document-view-tabs"><span>出力内容</span><button class="button ${state.data.customerDocView==='package'?'primary':'ghost'}" data-customer-doc-view="package">資料一式</button><button class="button ${state.data.customerDocView==='estimate'?'primary':'ghost'}" data-customer-doc-view="estimate">概算見積のみ</button></div><div class="section-actions"><button class="button primary" id="customerPrintButton">印刷プレビュー・PDF保存</button><button class="button ghost" id="customerDraftSave">入力・見積内容を端末保存</button><button class="button ghost" id="customerDraftOpen">保存内容を開く</button><button class="button ghost" id="customerDraftCopy">複製して編集</button><button class="button danger" id="customerDraftReset">新規入力へリセット</button><button class="button ghost" data-go="hearing">ヒアリングへ戻る</button></div><p class="storage-note">保存・複製した内容はこの端末のブラウザ内に残ります。「印刷プレビュー・PDF保存」を押し、PDFの場合は保存先で「PDFとして保存」を選択してください。別端末へは自動同期されません。</p></section><div class="customer-document-preview">${customerDocumentSheets(targets)}</div>`}
 function customerWizardProgress(step){
   const steps=[['サービス選択','基本情報を入力'],['ご希望入力','条件とオプション'],['内容確認','概算を確認'],['受付方法','控えを送る']];
   return `<section class="customer-wizard-progress" aria-label="入力の進行状況">${steps.map(([title,desc],index)=>{const no=index+1,status=no===step?'current':no<step?'done':'';return `<button type="button" class="${status}" data-customer-step="${no}" ${no>step+1?'disabled':''}><b>${no<step?'✓':no}</b><span><strong>${title}</strong><small>${desc}</small></span></button>`}).join('')}</section>`;
 }
 function customerWizardActions(step){
   return `<nav class="customer-wizard-actions" aria-label="入力画面の移動">${step>1?`<button type="button" class="button ghost" data-customer-step="${step-1}">← 前へ戻る</button>`:'<span></span>'}<div><small>${step} / 4</small>${step<4?`<button type="button" class="button primary" data-customer-step-next="${step+1}">次へ進む →</button>`:'<button type="button" class="button ghost" data-customer-step="3">内容を修正する</button>'}</div></nav>`;
+}
+function customerDraftControlsHtml(){
+  return `<section class="card customer-draft-controls no-print"><div><span class="eyebrow">DEVICE STORAGE</span><h2>入力内容の保存・再利用</h2><p>この端末に一時保存し、後から開いて編集できます。複製すると元の内容を残したまま別の依頼として編集できます。</p></div><div class="section-actions"><button type="button" class="button primary" id="customerDraftSave">この端末に保存</button><button type="button" class="button ghost" id="customerDraftOpen">保存内容を開く</button><button type="button" class="button ghost" id="customerDraftCopy">複製して編集</button><button type="button" class="button danger" id="customerDraftReset">新規入力へリセット</button></div><small>保存先は現在のブラウザです。共有端末では、受付完了後に不要な保存内容を削除してください。</small></section>`;
 }
 function customerBasicInformationHtml(){
   return `<div class="grid two customer-step-one">${card('お客様情報 / Customer Information',`<p class="step-help">店舗名とご連絡先を入力してください。電話番号またはメールアドレスのどちらか一方が必要です。</p><div class="form-grid">${input('storeName','店舗名 / Store Name')}${input('company','運営会社 / Company')}${input('owner','代表者 / Owner')}${input('contact','担当者 / Contact')}${input('phone','電話 / Phone','tel')}${input('email','メール / Email','email')}${input('address','住所 / Address','text','wide')}${input('hours','営業時間 / Hours')}${input('closed','定休日 / Closed')}${textArea('notes','全体メモ / General Notes')}</div>`)}${card('この画面で行うこと','<ol class="simple-operation-list"><li><b>店舗情報を入力</b><span>分かる範囲で構いません。</span></li><li><b>必要なサービスを選択</b><span>選んだ項目だけ次の画面に表示します。</span></li><li><b>次へ進む</b><span>内容はこの端末へ自動的に一時保存されます。</span></li></ol><p class="privacy-mini-note">カード番号、本人確認書類、口座情報、各社サービスのパスワードは入力しないでください。</p>','blue')}</div>${serviceSelectorHtml()}`;
@@ -756,7 +804,7 @@ function customerWizardStep(step,docs){
   if(step===3)return `${customerEstimateSummaryHtml()}${customerDocumentLauncherHtml()}<section class="card estimate-review-guide"><h2>確認するポイント</h2><div class="check-grid"><div class="choice">選択したサービスが合っているか</div><div class="choice">追加オプションに漏れがないか</div><div class="choice">別途見積の項目があるか</div><div class="choice">各社への直接支払いが別にあるか</div></div></section>`;
   return customerReceptionSummaryHtml();
 }
-function hearingPage(){const docs=[['doc-store','店舗名・住所・電話'],['doc-hours','営業時間・定休日'],['doc-photo','元サイズの店舗・商品画像'],['doc-video','掲載する動画の元データ'],['doc-logo','ロゴ・SNSリンク'],['doc-menu','確定したメニュー・価格・税率'],['doc-id','各社から指定された本人確認・事業者書類'],['doc-bank','決済サービスの入金口座'],['doc-ipad','iPad利用可否'],['doc-wifi','Wi-Fi環境']],step=state.data.customerStep;return `${pageHead('1-4','ヒアリング／概算見積','Guided Request','画面の案内に沿って、必要なサービスとご希望を入力してください。')}<section class="customer-input-guide"><div><span>FOR CUSTOMER</span><b>かんたん4ステップ</b></div><p>分かる範囲で入力してください。未定の項目は空欄のまま進めます。最後に概算と受付方法を確認できます。</p></section>${customerWizardProgress(step)}<div class="customer-wizard-panel" data-wizard-step="${step}">${customerWizardStep(step,docs)}</div>${customerWizardActions(step)}`}
+function hearingPage(){const docs=[['doc-store','店舗名・住所・電話'],['doc-hours','営業時間・定休日'],['doc-photo','元サイズの店舗・商品画像'],['doc-video','掲載する動画の元データ'],['doc-logo','ロゴ・SNSリンク'],['doc-menu','確定したメニュー・価格・税率'],['doc-id','各社から指定された本人確認・事業者書類'],['doc-bank','決済サービスの入金口座'],['doc-ipad','iPad利用可否'],['doc-wifi','Wi-Fi環境']],step=state.data.customerStep;return `${pageHead('1-4','ヒアリング／概算見積','Guided Request','画面の案内に沿って、必要なサービスとご希望を入力してください。')}<section class="customer-input-guide"><div><span>FOR CUSTOMER</span><b>かんたん4ステップ</b></div><p>分かる範囲で入力してください。未定の項目は空欄のまま進めます。最後に概算と受付方法を確認できます。</p></section>${customerDraftControlsHtml()}${customerWizardProgress(step)}<div class="customer-wizard-panel" data-wizard-step="${step}">${customerWizardStep(step,docs)}</div>${customerWizardActions(step)}`}
 function maintenanceHearingHtml(){const p=MAINTENANCE_PLANS[state.data.plan]||MAINTENANCE_PLANS.standard;return `<section class="card hearing-maintenance"><span class="eyebrow">AFTER SUPPORT</span><h2>保守・定期点検のご希望</h2><div class="grid two maintenance-hearing-choice"><label class="choice"><input type="radio" name="hearingMaintenance" data-field="maintenanceDecision" value="contract" ${state.data.maintenanceDecision==='contract'?'checked':''}><span><b>希望する</b><small>導入後の更新・点検・運用支援を契約する</small></span></label><label class="choice"><input type="radio" name="hearingMaintenance" data-field="maintenanceDecision" value="none" ${state.data.maintenanceDecision!=='contract'?'checked':''}><span><b>希望しない・後日検討</b><small>現時点では保守契約を申し込まない</small></span></label></div><div class="hearing-plan-select"><span>希望プラン</span>${Object.entries(MAINTENANCE_PLANS).map(([key,plan])=>`<label class="choice"><input type="radio" name="hearingPlan" data-field="plan" value="${key}" ${state.data.plan===key?'checked':''}><span><b>${esc(plan.label)}</b><small>${yen(plan.price)} / 月</small></span></label>`).join('')}</div><p class="selected-maintenance-note">現在の希望：<b>${state.data.maintenanceDecision==='contract'?`${esc(p.label)}プラン（${yen(p.price)}/月）`:'保守契約なし・後日検討'}</b></p></section>`}
 
 function serviceChecklistCards(){const selected=SERVICE_ORDER.filter(id=>state.data.selectedServices[id]);if(!selected.length)return card('サービス別チェック / Service Checklist','<p>対象サービスを選択すると、作業チェックと記入欄が表示されます。</p>','green');return `<div class="service-section-grid">${selected.map(id=>{const s=SERVICE_DEFS[id];return `<section class="card service-sheet accent-${s.accent}"><span class="service-chip">${esc(s.en)}</span><h2>${esc(s.label)}チェックシート</h2><div class="check-grid">${s.checks.map((label,i)=>choice(`${id}-check-${i}`,label)).join('')}</div><div class="form-grid checklist-notes">${textArea(`${id}CheckNote`,`${s.label} 作業メモ / Work Notes`)}</div></section>`}).join('')}</div>`}
@@ -909,7 +957,11 @@ function render(){
   if(!entry)buildNav();
   $('#caseName').value=state.data.caseName;
   if(state.mode==='admin'){
-    $('#currentStore').textContent=state.data.storeName||'店舗名未入力';
+    const savedCase=allCases().find(item=>item.id===state.data.id);
+    const hasDraftContent=Boolean(state.data.storeName||state.data.contact||state.data.owner||state.data.quotes?.length);
+    $('#currentCaseStatus').textContent=savedCase?'保存案件':hasDraftContent?'新規・未保存':'案件未選択';
+    $('#currentCaseStatus').className=`case-status-badge ${savedCase?'saved':hasDraftContent?'draft':'empty'}`;
+    $('#currentStore').textContent=savedCase?(state.data.storeName||'店舗名未入力'):(hasDraftContent?'新規案件を編集中':'案件を検索してください');
     $('#currentContract').textContent=state.data.contractNo||'契約番号未発行';
     $('#currentPage').textContent=currentPageLabel();
     $('#currentTotal').textContent=`見積 ${yen(quoteGrandTotal(state.data))}`;
@@ -1027,6 +1079,9 @@ function bindPage(){
   $$('[data-customer-step]').forEach(button=>button.addEventListener('click',()=>setCustomerStep(Number(button.dataset.customerStep))));
   $$('[data-customer-step-next]').forEach(button=>button.addEventListener('click',()=>setCustomerStep(Number(button.dataset.customerStepNext),true)));
   $('#customerDraftSave')?.addEventListener('click',saveCustomerDraft);
+  $('#customerDraftOpen')?.addEventListener('click',()=>showCases('', 'customer'));
+  $('#customerDraftCopy')?.addEventListener('click',copyCurrentCustomerDraft);
+  $('#customerDraftReset')?.addEventListener('click',resetCustomerDraft);
   $('#customerPrintButton')?.addEventListener('click',()=>window.print());
   $('#customerRequestSave')?.addEventListener('click',saveCustomerDraft);
   $('#customerRequestCopy')?.addEventListener('click',copyCustomerRequest);
@@ -1034,6 +1089,7 @@ function bindPage(){
   $('#customerRequestMail')?.addEventListener('click',mailCustomerRequest);
   $('#customerRequestLine')?.addEventListener('click',lineCustomerRequest);
   $('#customerRequestPrint')?.addEventListener('click',()=>{if(!customerRequestConfirmed())return;state.data.customerDocScope='all';state.data.customerDocView='estimate';markDirty();navigate('customerDocuments')});
+  if(state.page==='dashboard')bindDashboardCaseManager();
   $('#printButton')?.addEventListener('click',()=>window.print());
   $('#enterCustomer')?.addEventListener('click',()=>setMode('customer','home'));
   $('#enterAdmin')?.addEventListener('click',()=>sessionStorage.getItem(ADMIN_SESSION_KEY)==='1'?setMode('admin','dashboard'):openAdminDialog());
@@ -1099,33 +1155,133 @@ function restoreSignatures(){}
 
 function saveCase(){if(state.data.caseNameMode!=='manual')refreshAutoCaseName(state.data);else state.data.caseName=$('#caseName').value.trim()||generatedCaseName(state.data);state.data.updatedAt=new Date().toISOString();const list=allCases(),i=list.findIndex(x=>x.id===state.data.id);if(i>=0)list[i]=structuredClone(state.data);else list.unshift(structuredClone(state.data));commitCases(list);localStorage.setItem(UI_KEY,JSON.stringify(state.data));state.dirty=false;$('#saveState').textContent='保存済み';$('#topSaveState').textContent='保存済み';toast('案件を保存しました');render()}
 function saveCustomerDraft(){if(state.data.caseNameMode!=='manual')refreshAutoCaseName(state.data);state.data.updatedAt=new Date().toISOString();const list=allCases(),index=list.findIndex(item=>item.id===state.data.id);if(index>=0)list[index]=structuredClone(state.data);else list.unshift(structuredClone(state.data));commitCases(list);localStorage.setItem(UI_KEY,JSON.stringify(state.data));state.dirty=false;$('#saveState').textContent='保存済み';if($('#topSaveState'))$('#topSaveState').textContent='保存済み';toast('入力内容をこの端末に保存しました')}
-function openSavedCase(item,page='hearing'){
+function blankCustomerDraft(){
+  const data=defaultData();
+  data.selectedServices={website:false,square:false,funfo:false,design:false,other:false};
+  data.quotes=[];
+  data.customerStep=1;
+  refreshAutoCaseName(data);
+  return data;
+}
+function resetCustomerDraft(){
+  if(!confirm('現在の入力内容を閉じて、新しい入力を開始しますか？保存していない変更は元に戻せません。'))return;
+  state.data=blankCustomerDraft();
+  normalizeData(state.data);
+  state.dirty=true;
+  localStorage.setItem(UI_KEY,JSON.stringify(state.data));
+  navigate('hearing');
+  toast('新しい入力を開始しました');
+}
+function copyCurrentCustomerDraft(){
+  if(state.data.caseNameMode!=='manual')refreshAutoCaseName(state.data);
+  state.data.updatedAt=new Date().toISOString();
+  const saved=allCases();
+  const originalIndex=saved.findIndex(item=>item.id===state.data.id);
+  if(originalIndex>=0)saved[originalIndex]=structuredClone(state.data);
+  else saved.unshift(structuredClone(state.data));
+  const copied=structuredClone(state.data);
+  copied.id=crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  copied.caseNameMode='manual';
+  copied.caseName=`${generatedCaseName(copied)}（複製）`;
+  copied.contractNo=createContractNo();
+  copied.createdAt=copied.updatedAt=new Date().toISOString();
+  commitCases([copied,...saved]);
+  state.data=copied;
+  state.dirty=false;
+  localStorage.setItem(UI_KEY,JSON.stringify(state.data));
+  render();
+  toast('元の内容を残して複製しました');
+}
+function startNewCase(){
+  if(state.dirty&&!confirm('未保存の変更を破棄して新規案件を作成しますか？'))return;
+  state.data=defaultData();
+  normalizeData(state.data);
+  state.dirty=true;
+  localStorage.setItem(UI_KEY,JSON.stringify(state.data));
+  navigate('hearing');
+}
+function openSavedCase(item,page='hearing',mode='admin'){
   if(!item)return;
   state.data=structuredClone(item);
   normalizeData(state.data);
   state.dirty=false;
   localStorage.setItem(UI_KEY,JSON.stringify(state.data));
   $('#caseDialog').close();
-  setMode('admin',page);
+  setMode(mode==='customer'?'customer':'admin',page);
   toast(`${state.data.caseName}を開きました`);
 }
-function showCases(initialQuery=''){
+function copySavedCase(id,afterCopy){
+  const source=allCases().find(item=>item.id===id);
+  if(!source)return;
+  const copied=structuredClone(source);
+  copied.id=crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+  copied.caseNameMode='manual';
+  copied.caseName=`${copied.caseName}（複製）`;
+  copied.contractNo=createContractNo();
+  copied.createdAt=copied.updatedAt=new Date().toISOString();
+  commitCases([copied,...allCases()]);
+  afterCopy?.();
+  toast('案件を複製しました');
+}
+function deleteSavedCase(id,afterDelete){
+  const target=allCases().find(item=>item.id===id);
+  if(!target||!confirm(`「${target.caseName}」を削除しますか？`))return;
+  commitCases(allCases().filter(item=>item.id!==id));
+  if(state.data.id===id){
+    state.data=defaultData();
+    normalizeData(state.data);
+    state.dirty=false;
+    localStorage.setItem(UI_KEY,JSON.stringify(state.data));
+  }
+  afterDelete?.();
+  toast('案件を削除しました');
+}
+function bindCaseActionButtons(root,afterChange){
+  $$('[data-case-open]',root).forEach(button=>button.onclick=()=>openSavedCase(allCases().find(item=>item.id===button.dataset.caseOpen),button.dataset.casePage,button.dataset.caseMode));
+  $$('[data-case-copy]',root).forEach(button=>button.onclick=()=>copySavedCase(button.dataset.caseCopy,afterChange));
+  $$('[data-case-delete]',root).forEach(button=>button.onclick=()=>deleteSavedCase(button.dataset.caseDelete,afterChange));
+}
+function bindDashboardCaseManager(){
+  const search=$('#dashboardCaseSearch'),filter=$('#dashboardCaseFilter'),listRoot=$('#dashboardCaseList');
+  if(!search||!filter||!listRoot)return;
+  const draw=()=>{
+    const cases=allCases().map(item=>{const normalized=structuredClone(item);normalizeData(normalized);return normalized}).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+    const needle=search.value.trim().toLocaleLowerCase('ja-JP');
+    const selected=cases.filter(item=>{
+      const matchesSearch=!needle||caseSearchText(item).includes(needle);
+      const matchesFilter=filter.value==='all'||(filter.value==='current'&&item.id===state.data.id)||(filter.value==='contracted'&&item.contractDecision==='yes')||(filter.value==='maintenance'&&item.subscription);
+      return matchesSearch&&matchesFilter;
+    });
+    $('#dashboardCaseCount').textContent=`表示 ${selected.length}件 / 保存 ${cases.length}件`;
+    listRoot.innerHTML=selected.length?selected.map(item=>caseListItemHtml(item)).join(''):'<div class="dashboard-case-empty"><b>条件に一致する案件はありません</b><p>検索語または絞り込み条件を変更してください。</p></div>';
+    bindCaseActionButtons(listRoot,()=>{if(state.page==='dashboard')render()});
+  };
+  search.oninput=draw;
+  filter.onchange=draw;
+  $('#dashboardNewCase').onclick=startNewCase;
+  $('#dashboardOpenCaseSearch').onclick=()=>showCases(search.value);
+  bindCaseActionButtons(listRoot,()=>{if(state.page==='dashboard')render()});
+}
+function showCases(initialQuery='',audience=state.mode){
   if(typeof initialQuery!=='string')initialQuery='';
+  const dialog=$('#caseDialog'),customerMode=audience==='customer';
+  dialog.classList.toggle('customer-case-dialog',customerMode);
+  dialog.querySelector('.dialog-head h2').textContent=customerMode?'保存した入力内容':'案件一覧';
+  dialog.querySelector('.dialog-tools').hidden=customerMode;
+  dialog.querySelector('.storage-note').textContent=customerMode?'保存内容はこの端末のブラウザ内にあります。別端末へは自動同期されません。':'最新10件を超える場合は、整理前に全案件のJSONバックアップを自動保存します。';
   const list=allCases().map(item=>{const normalized=structuredClone(item);normalizeData(normalized);return normalized});
   const search=$('#caseSearch');
   const draw=(query='')=>{
     const needle=String(query).trim().toLocaleLowerCase('ja-JP');
     const filtered=list.filter(item=>!needle||[item.caseName,item.storeName,item.contact,item.phone,item.email,item.contractNo,...selectedServiceIds(item).map(id=>SERVICE_DEFS[id].label)].join(' ').toLocaleLowerCase('ja-JP').includes(needle));
     $('#caseCount').textContent=`表示 ${filtered.length}件 / 端末内 ${list.length}件`;
-    $('#caseList').innerHTML=filtered.length?filtered.map(item=>`<article class="case-item ${item.id===state.data.id?'current':''}"><div class="case-item-main"><span class="case-current-label">${item.id===state.data.id?'現在編集中':'保存案件'}</span><h3>${esc(item.caseName)}</h3><p>${esc(item.storeName||'店舗名未入力')} ・ ${esc(item.contractNo||'契約番号未発行')}</p><small>${selectedServiceIds(item).map(id=>esc(SERVICE_DEFS[id].label)).join('・')||'個別対応'} / ${new Date(item.updatedAt).toLocaleString('ja-JP')} / ${yen(quoteTotalFor(item))}</small></div><div class="case-actions"><button class="button primary" data-load-page="hearing" data-case-id="${item.id}">開いて編集</button><button class="button ghost" data-load-page="pricing" data-case-id="${item.id}">見積書</button><button class="button ghost" data-load-page="print" data-case-id="${item.id}">印刷</button><button class="button ghost" data-copy="${item.id}">複製</button><button class="button danger" data-delete="${item.id}">削除</button></div></article>`).join(''):'<p class="muted">条件に一致する案件はありません。</p>';
-    $$('[data-load-page]').forEach(button=>button.onclick=()=>openSavedCase(list.find(item=>item.id===button.dataset.caseId),button.dataset.loadPage));
-    $$('[data-copy]').forEach(button=>button.onclick=()=>{const copied=structuredClone(list.find(item=>item.id===button.dataset.copy));if(!copied)return;copied.id=crypto.randomUUID();copied.caseNameMode='manual';copied.caseName=`${copied.caseName}（複製）`;copied.contractNo=createContractNo();copied.createdAt=copied.updatedAt=new Date().toISOString();commitCases([copied,...allCases()]);showCases(query)});
-    $$('[data-delete]').forEach(button=>button.onclick=()=>{if(confirm('この案件を削除しますか？')){commitCases(allCases().filter(item=>item.id!==button.dataset.delete));showCases(query)}})
+    $('#caseList').innerHTML=filtered.length?filtered.map(item=>caseListItemHtml(item,'dialog',audience)).join(''):'<p class="muted">条件に一致する案件はありません。</p>';
+    bindCaseActionButtons($('#caseList'),()=>showCases(query,audience));
   };
   search.value=initialQuery;
   search.oninput=()=>draw(search.value);
   draw(initialQuery);
-  if(!$('#caseDialog').open)$('#caseDialog').showModal();
+  if(!dialog.open)dialog.showModal();
   setTimeout(()=>search.focus(),0);
 }
 
@@ -1142,7 +1298,7 @@ async function shareNative(){const info={title:state.data.caseName,text:`${state
 document.addEventListener('click',e=>{const p=e.target.closest('[data-page]');if(p)navigate(p.dataset.page);if(e.target.matches('[data-close]'))e.target.closest('dialog').close()});
 $('#caseName').addEventListener('input',e=>{state.data.caseName=e.target.value;state.data.caseNameMode='manual';markDirty();$('#autoCaseName').classList.remove('active');$('#autoCaseName').textContent='自動名'});
 $('#autoCaseName').onclick=()=>{state.data.caseNameMode='auto';refreshAutoCaseName(state.data);markDirty();render();toast('選択サービスから案件名を作成しました')};
-$('#saveButton').onclick=saveCase;$('#caseListButton').onclick=()=>showCases();$('#newCase').onclick=()=>{if(!state.dirty||confirm('未保存の変更を破棄して新規案件を作成しますか？')){state.data=defaultData();normalizeData(state.data);state.dirty=true;localStorage.setItem(UI_KEY,JSON.stringify(state.data));navigate('hearing')}};$('#menuButton').onclick=()=>$('#sidebar').classList.contains('open')?closeSidebar():openSidebar();
+$('#saveButton').onclick=saveCase;$('#caseListButton').onclick=()=>showCases();$('#newCase').onclick=startNewCase;$('#menuButton').onclick=()=>$('#sidebar').classList.contains('open')?closeSidebar():openSidebar();
 $('#sidebarBackdrop').onclick=closeSidebar;
 $('#modeButton').onclick=()=>state.mode==='admin'?setMode('customer','home'):setMode('entry','entry');
 $('#brandHome').onclick=()=>state.mode==='admin'?setMode('admin','dashboard'):state.mode==='customer'?setMode('customer','home'):setMode('entry','entry');
