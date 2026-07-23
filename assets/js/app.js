@@ -349,6 +349,8 @@ function checklistPrintSheet(d,num='04'){const c=d.checks||{},status=(key,label)
 function maintenancePrintSheet(d,num='05'){const p=MAINTENANCE_PLANS[d.plan]||MAINTENANCE_PLANS.standard;return `<section class="card print-sheet maintenance-print-sheet"><div class="print-doc-head"><span>${num}</span><div><small>MAINTENANCE AGREEMENT</small><h2>保守・定期点検契約書</h2></div></div><div class="maintenance-status yes">保守・定期点検を契約する</div><div class="maintenance-plan-print"><div><small>PLAN</small><b>${esc(p.label)}</b></div><div><small>MONTHLY FEE</small><b>${yen(d.subscriptionPrice)}</b></div><div><small>START DATE</small><b>${esc(d.subscriptionStart||'未定')}</b></div><div><small>TERM</small><b>${esc(d.subscriptionTerm||'未定')}</b></div></div><section class="maintenance-task-print"><h3>${esc(p.label)}プラン 作業項目</h3>${p.tasks.map((task,i)=>`<div><span>${String(i+1).padStart(2,'0')}</span><b>${esc(task)}</b></div>`).join('')}</section>${d.subscriptionDetails?`<section class="card individual-terms"><h3>個別契約内容</h3><p>${esc(d.subscriptionDetails)}</p></section>`:''}<div class="grid two maintenance-signatures">${printSignature(d,'maintenanceClient','お客様署名')}${printSignature(d,'maintenanceProducer','制作担当署名')}</div></section>`}
 function handoverPrintSheet(d,num='05'){return `<section class="card print-sheet"><div class="print-doc-head"><span>${num}</span><div><small>DELIVERY CONFIRMATION</small><h2>引渡し確認書</h2></div></div><p>引渡日：${esc(d.handoverDate||'')}　店舗担当者：${esc(d.contact)}　制作担当者：${esc(d.producer||'')}</p>${choices([['hand-web','ホームページ公開'],['hand-square','Square設定完了'],['hand-funfo','funfo設定完了'],['hand-design','制作データ納品'],['hand-training','操作説明完了'],['hand-support','サポート開始']])}${maintenanceHandoverHtml(d)}${printSignature(d,'handover','引渡し署名')}<p><b>備考：</b>${esc(d.handoverNotes||'')}</p></section>`}
 
+function squareReviewGuideHtml(){return `<div class="square-review-guide"><div class="review-guide-head"><div><span>OFFICIAL REVIEW GUIDE</span><h3>Square公式情報に基づく審査の目安</h3></div><small>確認日：2026年7月23日</small></div><p class="pcsapo-review-estimate"><b>PCSAPOのご案内目安：</b>必要書類の確認、申請補助、追加対応を含め、初期カードブランドが利用可能になるまで1週間〜10日程度の余裕を見てご案内します。これはSquare公式の審査日数ではありません。</p><div class="review-guide-grid"><article><span>初期カードブランド</span><h4>Visa・Mastercard・American Express・UnionPay（銀聯）</h4><strong>通常1〜3営業日</strong><p>必要情報を提出した後の公式目安です。最短当日の場合もありますが、追加確認等で延びることがあります。</p></article><article><span>別途カードブランド審査</span><h4>JCB・Diners Club・Discover</h4><strong>通常5〜15日</strong><p>株式会社ジェーシービーによる別の審査です。結果によっては利用できない場合があります。</p></article><article><span>QRコード決済</span><h4>PayPay・d払い・楽天ペイ・au PAY・メルペイ等</h4><strong>通常30日以内</strong><p>各QRコード決済事業者が審査します。事業者や追加情報の有無により処理時間が異なります。</p></article><article><span>電子マネー</span><h4>QUICPay・iD・交通系IC</h4><strong>ブランドごとに順次有効化</strong><p>別途申込みが必要です。完了日数はブランドごとに異なり、QUICPayはJCBの手続き完了後に審査されます。</p></article></div><div class="activation-flow"><span><b>1</b>初期カード審査</span><i>→</i><span><b>2</b>JCB系の別審査</span><i>→</i><span><b>3</b>電子マネーを順次有効化</span><em>QRコード決済は別途、各事業者が審査</em></div><p class="review-guide-note">必要書類がすべて揃い、申請内容に不備がない場合の参考です。審査中・要対応・審査遅延・非承認となる場合があり、すべてのブランドの利用開始日が同じになるとは限りません。</p><div class="schedule-source-links"><a href="https://squareup.com/jp/ja/payments/card-payments" target="_blank" rel="noopener">カード審査の公式説明</a><a href="https://squareup.com/help/jp/ja/article/6040-jp-only-jcb-limited-availability-irf-application" target="_blank" rel="noopener">JCB等の公式説明</a><a href="https://squareup.com/help/jp/ja/article/8370-apply-for-qr-code-payments" target="_blank" rel="noopener">QRコード決済の公式説明</a><a href="https://squareup.com/help/jp/ja/article/6711-apply-for-e-money" target="_blank" rel="noopener">電子マネーの公式説明</a></div></div>`}
+
 function render(){
   document.body.dataset.mode=state.mode;
   const entry=state.mode==='entry';
@@ -359,10 +361,16 @@ function render(){
   $('#shareButton').hidden=state.mode!=='admin';
   $('#saveButton').hidden=state.mode!=='admin';
   $('#newCase').hidden=state.mode!=='admin';
-  $('#modeButton').textContent=state.mode==='admin'?'お客様画面':'入口へ';
+  $('#modeButton').textContent=state.mode==='admin'?'お客様画面':'HOME';
   if(!entry)buildNav();
   $('#caseName').value=state.data.caseName;
   $('#content').innerHTML=(pages[state.page]||pages.entry)();
+  if(state.page==='schedule'){
+    const oldGuide=$('.review-estimates'),holder=document.createElement('div');holder.innerHTML=squareReviewGuideHtml();
+    const guide=holder.firstElementChild,flow=guide?.querySelector('.activation-flow');
+    if(flow)flow.innerHTML='<span><b>A</b>初期カード審査</span><span><b>B</b>JCB系は別審査</span><span><b>C</b>QRは各事業者が別審査</span><em>電子マネー：iD・交通系ICは個別に有効化／QUICPayはJCB手続き完了後</em>';
+    oldGuide?.replaceWith(guide);
+  }
   bindPage();restoreSignatures();$('#content').focus({preventScroll:true})
 }
 function bindPage(){
