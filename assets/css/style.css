@@ -228,3 +228,25 @@ body[data-mode="entry"]{background:#eef2f7}.entry-screen{max-width:1180px;gap:18
 /* funfo online-payment review guidance */
 .funfo-review-guide{margin:18px 0;padding:20px;border:1px solid #f0cfad;border-radius:15px;background:#fff6eb}.funfo-review-guide .review-guide-head span{color:#d66e13}.funfo-review-guide .review-guide-grid article{border:1px solid #f2e3d3}.funfo-review-guide .review-guide-grid strong{color:#d66e13}.funfo-review-grid{margin-bottom:12px}.funfo-review-guide .review-guide-note{border-left-color:#1768d8;background:#eef5ff;color:#385674}
 @media print{.funfo-review-guide,.funfo-review-guide article{break-inside:avoid}}
+
+/* Customer-owned accounts, delegated access and privacy confirmation */
+.account-setup-guide{margin:24px 0;padding:26px;border:1px solid #bad4f4;border-top:7px solid #176fe5;border-radius:18px;background:linear-gradient(135deg,#eef6ff,#fff);box-shadow:0 15px 34px rgba(23,77,139,.09)}
+.account-setup-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.account-setup-head>div{max-width:850px}.account-setup-head span,.subsidy-guidance>div>span{color:#1768d8;font-size:10px;font-weight:900;letter-spacing:.1em}
+.account-setup-head h2{margin:5px 0 7px;color:#102f55;font-size:25px;line-height:1.35}.account-setup-head p{margin:0;color:#43566e;font-size:15px;line-height:1.75}
+.account-setup-head>a{flex:none;min-height:44px;padding:10px 13px;border:1px solid #a9c8ee;border-radius:10px;background:#fff;color:#1768d8;font-size:12px;font-weight:850;text-decoration:none}
+.account-setup-head>a:hover{border-color:#1768d8;background:#f4f8ff}
+.account-setup-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.account-setup-steps article{display:flex;gap:11px;min-width:0;padding:16px;border:1px solid #d6e4f4;border-radius:12px;background:#fff}
+.account-setup-steps article>b{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:#176fe5;color:#fff;font-size:13px}
+.account-setup-steps h3{margin:2px 0 5px;font-size:15px}.account-setup-steps p{margin:0;color:#536378;font-size:12px;line-height:1.65}
+.privacy-protection-note{padding:15px 17px;border-left:5px solid #ff8a34;border-radius:10px;background:#fff4e8}.privacy-protection-note b{display:block;color:#9b4f0e;font-size:16px}.privacy-protection-note p{margin:5px 0 0;color:#694e34;font-size:13px;font-weight:650;line-height:1.7}
+.account-confirmations{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:18px 0 0;padding:16px;border:1px solid #c8daf0;border-radius:13px;background:#fff}
+.account-confirmations legend{padding:0 7px;color:#173d68;font-size:14px;font-weight:900}.account-confirmations .choice{min-height:58px;align-items:center}.account-confirmations .choice span{font-weight:750;line-height:1.5}
+.account-setup-guide.compact{margin:18px 0;padding:21px;box-shadow:none}.account-setup-guide.compact .account-setup-head h2{font-size:21px}
+.subsidy-guidance{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.55fr);align-items:center;gap:22px;margin:22px 0;padding:21px 24px;border-left:6px solid #36b37e;border-radius:15px;background:#effaf6}
+.subsidy-guidance h2{margin:4px 0 6px;font-size:20px}.subsidy-guidance p{margin:0;color:#456457;line-height:1.7}.subsidy-guidance .choice{min-height:72px;align-items:center}.subsidy-guidance .choice span b,.subsidy-guidance .choice span small{display:block}.subsidy-guidance .choice span small{margin-top:3px;color:var(--muted);font-size:11px}
+.account-owner-policy{padding:17px 19px;border-left:5px solid #176fe5;border-radius:11px;background:#eef5ff}.account-owner-policy b{font-size:17px}.account-owner-policy p{margin:6px 0 0;color:#405b78;line-height:1.7}
+@media(max-width:1000px){.account-setup-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.account-setup-guide{padding:18px}.account-setup-head{flex-direction:column}.account-setup-head h2{font-size:22px}.account-setup-head p{font-size:14px}.account-setup-head>a{width:100%;text-align:center}.account-setup-steps,.account-confirmations,.subsidy-guidance{grid-template-columns:1fr}.privacy-protection-note b{font-size:15px}.subsidy-guidance{padding:18px}}
+@media print{.account-setup-guide,.account-setup-steps article,.privacy-protection-note,.account-confirmations,.subsidy-guidance{break-inside:avoid}.account-setup-head>a{display:none}.account-setup-guide{box-shadow:none}}
