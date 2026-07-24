@@ -322,3 +322,44 @@ body[data-mode="entry"]{background:#eef2f7}.entry-screen{max-width:1180px;gap:18
   .case-context-meta{min-height:18px;overflow:hidden}
   .case-context-meta span,.case-context-meta strong{max-width:48vw}
 }
+
+/*
+ * Contract pages contain variable-height service and privacy sections.
+ * Keep both signatures together and continue on another sheet when needed,
+ * instead of clipping the bottom at the fixed A4 boundary.
+ */
+@media print{
+  .contract-print-sheet,.maintenance-print-sheet{
+    height:auto!important;
+    min-height:296mm!important;
+    max-height:none!important;
+    overflow:visible!important;
+    contain:none!important;
+    break-inside:auto!important;
+    page-break-inside:auto!important;
+  }
+  .contract-print-sheet .service-contract-grid{
+    column-gap:4mm!important;
+    row-gap:1.5mm!important;
+  }
+  .contract-print-sheet .service-contract-grid>div{
+    min-height:0!important;
+    padding:1.6mm 2mm!important;
+    border-radius:2mm!important;
+  }
+  .contract-print-sheet .service-contract-grid b{
+    line-height:1.3!important;
+  }
+  .contract-print-sheet .service-contract-grid small{
+    margin-top:.5mm!important;
+    line-height:1.25!important;
+  }
+  .contract-signatures,.maintenance-signatures{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .contract-notes,.privacy-summary,.print-signature{
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+}

@@ -829,7 +829,54 @@ function paymentChoicesHtml(){return `<div class="field payment-method-field"><s
 function contractPage(){return `${pageHead('22','ご契約書','Service Agreement','契約対象サービス、金額、支払方法、納期を明確に確認します。')}<section class="card contract-services"><h2>ご契約サービス / Contracted Services</h2>${contractedServicesHtml(state.data)}</section><div class="grid two" style="margin-top:18px">${card('契約基本情報 / Contract Information',`<div class="form-grid">${input('date','契約日','date')}${input('contractNo','契約番号')}${input('storeName','店舗名')}${input('contact','代表者・担当者')}${input('company','運営会社')}${input('email','メール','email')}${input('phone','電話','tel')}${input('address','住所','text','wide')}</div>`)}${card('契約・支払い / Agreement & Payment',`<div class="field"><span>契約意思</span><div class="check-grid">${[['yes','契約する'],['no','契約しない'],['consider','後日検討']].map(([v,l])=>`<label class="choice"><input type="radio" name="decision" data-field="contractDecision" value="${v}" ${state.data.contractDecision===v?'checked':''}>${l}</label>`).join('')}</div></div>${paymentChoicesHtml()}<p>契約金額（税込）</p><div class="metric orange">${yen(quoteGrandTotal())}</div>${input('desiredDate','納期予定','date')}`,'blue')}</div>${card('ご確認事項 / Notes','<p>制作内容は見積書・提案書に基づきます。ドメイン・サーバー・端末代・印刷代は別途となる場合があります。制作開始後の大幅な仕様変更は追加見積となる場合があります。外部サービスの仕様・審査期間は各提供会社の条件に準じます。</p>','green')}<section class="card">${privacySummaryHtml(state.data)}</section><div class="grid two">${signatureBlock('client','お客様署名 / Client Signature')}${signatureBlock('producer','制作担当署名 / Producer Signature')}</div>`}
 function quoteGrandTotal(data=state.data){return calculateQuoteTotals(implementationQuoteLines(data)).total}
 function handoverPage(){return `${pageHead('19','引渡し確認書','Delivery Confirmation','納品内容と、引渡し後の保守開始内容を確認します。')}<div class="grid two">${card('納品内容 / Deliverables',choices([['hand-web','ホームページ公開'],['hand-square','Square設定完了'],['hand-funfo','funfo設定完了'],['hand-design','メニュー・名刺データ納品'],['hand-training','操作説明完了'],['hand-support','サポート開始']]))}${card('引渡し情報 / Handover Details',`<div class="form-grid">${input('handoverDate','引渡日','date')}${input('contact','店舗担当者')}${input('producer','制作担当者')}${textArea('handoverNotes','備考')}</div>`,'blue')}</div>${maintenanceHandoverHtml(state.data)}${signatureBlock('handover','引渡し署名 / Handover Signature')}`}
-function printPage(){const d=state.data,activeMaintenance=hasActiveMaintenance(d),mode=activeMaintenance?(d.printMode||'implementation'):'implementation',controls=printModeControls(d);if(mode==='maintenance')return `${pageHead('PDF','PDF・印刷','A4 Document Output','保守・定期点検だけを依頼するお客様向けです。')}${controls}<div class="grid two no-print">${card('出力内容 / Output','<p>既存店・途中加入のお客様向けの全3ページです。</p><button class="button primary" id="printButton">PDF保存・印刷</button>')}${card('ページ構成 / Pages','<ol><li>保守サービス表紙</li><li>保守・定期点検 御見積書</li><li>保守・定期点検契約書</li></ol>','blue')}</div>${coverPrintSheet(d,true)}${maintenanceQuotePrintSheet(d,'02')}${maintenancePrintSheet(d,'03')}`;if(mode==='combined'){return `${pageHead('PDF','PDF・印刷','A4 Document Output','導入見積と保守見積の両方を出力します。')}${controls}<div class="grid two no-print">${card('出力内容 / Output','<p>導入見積と保守見積を別ページで出力する全7ページです。</p><button class="button primary" id="printButton">PDF保存・印刷</button>')}${card('ページ構成 / Pages','<ol><li>導入パッケージ表紙</li><li>導入 御見積書</li><li>保守・定期点検 御見積書</li><li>ご契約書</li><li>導入チェックシート</li><li>保守・定期点検契約書</li><li>引渡し確認書</li></ol>','blue')}</div>${coverPrintSheet(d,false)}${quotePrintSheet(d)}${maintenanceQuotePrintSheet(d,'03')}${contractPrintSheet(d,'04')}${checklistPrintSheet(d,'05')}${maintenancePrintSheet(d,'06')}${handoverPrintSheet(d,'07')}`};return `${pageHead('PDF','PDF・印刷','A4 Document Output','通常の導入見積・契約・チェック・引渡しを出力します。')}${controls}<div class="grid two no-print">${card('出力内容 / Output','<p>通常導入用の全5ページです。</p><button class="button primary" id="printButton">PDF保存・印刷</button>')}${card('ページ構成 / Pages','<ol><li>導入パッケージ表紙</li><li>御見積書</li><li>ご契約書</li><li>導入チェックシート</li><li>引渡し確認書</li></ol>','blue')}</div>${coverPrintSheet(d,false)}${quotePrintSheet(d)}${contractPrintSheet(d,'03')}${checklistPrintSheet(d,'04')}${handoverPrintSheet(d,'05')}`}
+function needsImplementationProgressDocs(data=state.data){
+  const selectedTechnical=['website','square','funfo'].some(id=>data.selectedServices?.[id]);
+  const technicalCategories=new Set(['ホームページ制作','Square導入構築','funfo構築']);
+  const hasTechnicalQuote=implementationQuoteLines(data).some(item=>technicalCategories.has(item.category||inferQuoteCategory(item.name,item.source)));
+  return selectedTechnical||hasTechnicalQuote;
+}
+function printOverview(total,description,pages){
+  return `<div class="grid two no-print">${card('出力内容 / Output',`<p>${esc(description)}全${total}ページです。</p><button class="button primary" id="printButton">PDF保存・印刷</button>`)}${card('ページ構成 / Pages',`<ol>${pages.map(page=>`<li>${esc(page)}</li>`).join('')}</ol>`,'blue')}</div>`;
+}
+function printPage(){
+  const d=state.data;
+  const activeMaintenance=hasActiveMaintenance(d);
+  const mode=activeMaintenance?(d.printMode||'implementation'):'implementation';
+  const controls=printModeControls(d);
+  const needsProgressDocs=needsImplementationProgressDocs(d);
+
+  if(mode==='maintenance'){
+    const pages=['保守サービス表紙','保守・定期点検 御見積書','保守・定期点検契約書'];
+    return `${pageHead('PDF','PDF・印刷','A4 Document Output','保守・定期点検だけを依頼するお客様向けです。')}${controls}${printOverview(pages.length,'既存店・途中加入のお客様向けの',pages)}${coverPrintSheet(d,true)}${maintenanceQuotePrintSheet(d,'02')}${maintenancePrintSheet(d,'03')}`;
+  }
+
+  if(mode==='combined'){
+    const pages=['導入パッケージ表紙','導入 御見積書','保守・定期点検 御見積書','ご契約書'];
+    const sheets=[coverPrintSheet(d,false),quotePrintSheet(d),maintenanceQuotePrintSheet(d,'03'),contractPrintSheet(d,'04')];
+    let nextPage=5;
+    if(needsProgressDocs){
+      pages.push('導入チェックシート');
+      sheets.push(checklistPrintSheet(d,String(nextPage++).padStart(2,'0')));
+    }
+    pages.push('保守・定期点検契約書');
+    sheets.push(maintenancePrintSheet(d,String(nextPage++).padStart(2,'0')));
+    if(needsProgressDocs){
+      pages.push('引渡し確認書');
+      sheets.push(handoverPrintSheet(d,String(nextPage).padStart(2,'0')));
+    }
+    const description=needsProgressDocs?'導入見積と保守見積を別ページで出力する':'制作・販促支援と保守の必要書類だけを出力する';
+    return `${pageHead('PDF','PDF・印刷','A4 Document Output','導入見積と保守見積の両方を出力します。')}${controls}${printOverview(pages.length,description,pages)}${sheets.join('')}`;
+  }
+
+  const pages=['導入パッケージ表紙','御見積書','ご契約書'];
+  const sheets=[coverPrintSheet(d,false),quotePrintSheet(d),contractPrintSheet(d,'03')];
+  if(needsProgressDocs){
+    pages.push('導入チェックシート','引渡し確認書');
+    sheets.push(checklistPrintSheet(d,'04'),handoverPrintSheet(d,'05'));
+  }
+  const description=needsProgressDocs?'通常導入用の':'制作物・販促支援案件に必要な書類だけをまとめた';
+  return `${pageHead('PDF','PDF・印刷','A4 Document Output',needsProgressDocs?'通常の導入見積・契約・チェック・引渡しを出力します。':'制作物・販促支援案件に必要な帳票だけを出力します。')}${controls}${printOverview(pages.length,description,pages)}${sheets.join('')}`;
+}
 function printModeControls(d){const active=hasActiveMaintenance(d);if(!active)d.printMode='implementation';return `<section class="card print-mode-controls no-print"><div class="print-mode-heading"><span class="eyebrow">PRINT SET</span><h2>印刷する帳票を選択</h2><small>${active?'保守契約と保守見積が確認済みです。':'保守契約が未選択のため、導入帳票のみ出力します。'}</small></div><div class="print-mode-buttons"><button class="button ${d.printMode==='implementation'?'primary':'ghost'}" data-set-print-mode="implementation">導入のみ</button>${active?`<button class="button ${d.printMode==='combined'?'primary':'ghost'}" data-set-print-mode="combined">導入＋保守</button><button class="button ${d.printMode==='maintenance'?'primary':'ghost'}" data-set-print-mode="maintenance">保守のみ</button>`:''}</div><fieldset class="stamp-choice"><legend>見積書の印鑑</legend><label><input type="radio" name="stampChoice" value="none" data-stamp-choice ${d.includeStamp?'':'checked'}><span>印鑑なし</span></label><label><input type="radio" name="stampChoice" value="stamp" data-stamp-choice ${d.includeStamp?'checked':''}><span>印鑑あり</span></label><small>「印鑑あり」を選ぶと、導入・保守の見積書にPCSAPO印を表示します。</small></fieldset></section>`}
 function printSignature(d,key,label){const name=d[`${key}SignerName`]||'';return `<div class="print-signature"><b>${label}</b>${d.signatures[key]?`<img src="${d.signatures[key]}" alt="保存済み署名">`:'<div></div>'}<small>記名：${esc(name)}　日付：${esc(d.date||'')}</small></div>`}
 function coverPrintSheet(d,maintenanceOnly=false){return `<section class="print-sheet cover-sheet clean-cover"><div class="cover-top"><span>PCSAPO マキシ企画</span><small>${maintenanceOnly?'MAINTENANCE SERVICE':'IMPLEMENTATION PACKAGE'} 2026</small></div><div class="cover-copy"><span class="cover-kicker">飲食店向け店舗DX</span><h2>${maintenanceOnly?'保守・定期点検<br>サービス':'店舗導入<br>パッケージ'}</h2><p>${maintenanceOnly?'Maintenance / Regular Check / Support':'Website / Square Payment / funfo Mobile Order'}</p></div><div class="cover-services">${maintenanceOnly?'<div><b>CHECK</b><span>定期的な表示・設定確認</span></div><div><b>UPDATE</b><span>店舗情報とメニューの更新</span></div><div><b>SUPPORT</b><span>運用相談と改善提案</span></div>':'<div><b>WEB</b><span>店舗情報をわかりやすく発信</span></div><div><b>PAYMENT</b><span>Squareで決済をシンプルに</span></div><div><b>ORDER</b><span>funfoで注文導線を効率化</span></div>'}</div><p class="cover-message">${maintenanceOnly?'導入後の安心運用と継続的な改善を、<br>店舗に合わせてサポート。':'集客・注文・決済・運用支援を、<br>店舗に合わせてひとつの流れに。'}</p><div class="cover-client"><small>PROPOSAL FOR</small><b>${esc(d.company||d.storeName||d.contact||'依頼者名未入力')} 御中</b><span>${esc(d.date||'')}</span></div></section>`}
